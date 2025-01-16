@@ -28,8 +28,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "~/components/ui/sidebar";
-import { ModeToggle } from "./theme-changer";
+} from "~/components/ui/sidebar"; 
 
 export function NavUser({
   user,

@@ -26,8 +26,7 @@ import {
   SidebarRail,
 } from "~/components/ui/sidebar";
 import { ModeToggle } from "./theme-changer";
-
-// This is sample data.
+ 
 const data = {
   user: {
     name: "shadcn",
