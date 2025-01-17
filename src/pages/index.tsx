@@ -5,8 +5,8 @@ import { SidebarTrigger } from "~/components/ui/sidebar";
 
 import { api } from "~/utils/api";
 
-export default function Home() { 
-
+export default function Home() {  
+  const asd = api.post.getSecretMessage.useQuery(undefined, { enabled: true });
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
@@ -34,7 +34,20 @@ export default function Home() {
           <div className="aspect-video rounded-xl bg-muted/50" />
           <div className="aspect-video rounded-xl bg-muted/50" />
         </div>
-        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        <AuthShowcase />
+        <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min">
+          {
+            asd.isLoading ? (
+              <p>Loading...</p>
+            ) : asd.isError ? (
+              <p> Error: {asd.error.message}</p>
+            ) : asd.isSuccess ? (
+              asd.data
+            ) : (
+              "Error"
+            )
+          }
+        </div>
       </div>
     </>
   );
