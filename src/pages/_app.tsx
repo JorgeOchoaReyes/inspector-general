@@ -33,22 +33,15 @@ const MyApp: AppType<{ session: Session | null }> = ({
         defaultTheme="system"
         enableSystem
         disableTransitionOnChange
-      > 
-        {    
-          !session ? 
+      >  
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
             <div className={GeistSans.className}>
               <Component {...pageProps} />
             </div>
-            :
-            <SidebarProvider>
-              <AppSidebar />
-              <SidebarInset>
-                <div className={GeistSans.className}>
-                  <Component {...pageProps} />
-                </div>
-              </SidebarInset>
-            </SidebarProvider>
-        }
+          </SidebarInset>
+        </SidebarProvider> 
       </ThemeProvider>
     </SessionProvider>
   );
