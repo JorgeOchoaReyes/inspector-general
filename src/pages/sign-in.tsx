@@ -1,13 +1,16 @@
 import React, { type ReactNode } from "react";
-import { SiGithub, SiX } from "react-icons/si";
+import { SiDiscord } from "react-icons/si";
 import { FiArrowLeft } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { twMerge } from "tailwind-merge";
+import { useRouter } from "next/router";
+import { signIn, signOut, useSession } from "next-auth/react"; 
 
 export default function AuthPage() {
+  const router = useRouter();
   return (
     <div className="bg-zinc-950 flex h-screen items-center text-zinc-200 selection:bg-zinc-600">
-      <BubbleButton className="absolute left-4 top-6 text-sm">
+      <BubbleButton className="absolute left-4 top-6 text-sm" onClick={() => router.push("/")}> 
         <FiArrowLeft />
         Go back
       </BubbleButton>
@@ -28,10 +31,7 @@ export default function AuthPage() {
         className="relative z-10 mx-auto w-full max-w-xl p-4"
       >
         <Heading />
-
         <SocialOptions />
-        <Or />
-        <Email />
         <Terms />
       </motion.div>
 
@@ -55,22 +55,25 @@ const Heading = () => (
   </div>
 );
 
-const SocialOptions = () => (
-  <div>
-    <div className="mb-3 flex gap-3">
-      <BubbleButton className="flex w-full justify-center py-3">
-        <SiX />
-      </BubbleButton>
-      <BubbleButton className="flex w-full justify-center py-3">
-        <SiGithub />
-      </BubbleButton>
-    </div>
-    <BubbleButton className="flex w-full justify-center py-3">
-      Sign in with SSO
+const SocialOptions = () => {
+  const { data: sessionData } = useSession();
+  return <div> 
+    <BubbleButton className="flex w-full justify-center py-3" 
+      onClick={async () => {
+        if (sessionData) {
+          alert("You are signed in.");
+          await signOut();
+        } else {
+          alert("You are not signed in.");
+          await signIn("discord", {
+            callbackUrl: "/dashboard",
+          }); 
+        }
+      }}>
+      <SiDiscord />
     </BubbleButton>
-  </div>
-);
-
+  </div>;
+}; 
 const Or = () => {
   return (
     <div className="my-6 flex items-center gap-3">

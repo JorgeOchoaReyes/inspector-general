@@ -36,7 +36,13 @@ export const authConfig = {
         ...session.user,
         id: user.id,
       },
-    }),
+    }), 
+    redirect({url, baseUrl}) {
+      console.log("url", url);
+      console.log("baseUrl", baseUrl);
+      
+      return url.startsWith(baseUrl) ? url : (baseUrl + url);
+    }
   },
 } satisfies NextAuthOptions;
 
