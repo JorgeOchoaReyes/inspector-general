@@ -1,4 +1,5 @@
 import { signIn, signOut, useSession } from "next-auth/react";
+import { DashboardLayout } from "~/components/layout/DashboardLayout";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "~/components/ui/breadcrumb";
 import { Separator } from "~/components/ui/separator";
 import { SidebarTrigger } from "~/components/ui/sidebar";
@@ -7,7 +8,7 @@ import { api } from "~/utils/api";
 
 export default function Home(){   
   return (
-    <>
+    <DashboardLayout>
       <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
         <div className="flex items-center gap-2 px-4"> 
           <SidebarTrigger className="-ml-1" />
@@ -37,7 +38,7 @@ export default function Home(){
           <AuthShowcase />
         </div>
       </div>
-    </>
+    </DashboardLayout>
   );
 };
 
