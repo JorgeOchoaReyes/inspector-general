@@ -1,6 +1,6 @@
 import React, { type ReactNode, useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { FiArrowUpRight } from "react-icons/fi";
+import { FiArrowUpRight } from "react-icons/fi"; 
 
 export default function TextParallaxContentExample(){
   return (

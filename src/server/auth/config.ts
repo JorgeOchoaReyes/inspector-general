@@ -25,6 +25,9 @@ export const authConfig = {
       clientSecret: process.env.AUTH_DISCORD_SECRET ?? "",
     }), 
   ],
+  pages: { 
+    signIn: "/sign-in", 
+  }, 
   adapter: PrismaAdapter(db),
   callbacks: {
     session: ({ session, user }) => ({
