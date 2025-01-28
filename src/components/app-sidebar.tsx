@@ -14,8 +14,7 @@ import {
   SquareTerminal,
 } from "lucide-react";
 
-import { NavMain } from "~/components/nav-main";
-import { NavProjects } from "~/components/nav-projects";
+import { NavMain } from "~/components/nav-main"; 
 import { NavUser } from "~/components/nav-user";
 import { TeamSwitcher } from "~/components/team-switcher";
 import {
@@ -26,7 +25,8 @@ import {
   SidebarRail,
 } from "~/components/ui/sidebar";
 import { ModeToggle } from "./theme-changer";
- 
+import { useRouter } from "next/router";
+
 const data = {
   user: {
     name: "shadcn",
@@ -34,137 +34,132 @@ const data = {
     avatar: "/avatars/shadcn.jpg",
   },
   teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
+  
   ],
   navMain: [
     {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
+      title: "Pull Request",
+      url: "/dashboard/pull-requests",
       icon: Bot,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Recent",
+          url: "/dashboard/pull-requests?filter=recent",
         },
         {
-          title: "Explorer",
-          url: "#",
+          title: "All Pull Requests",
+          url: "/dashboard/pull-requests?filter=all",
         },
         {
-          title: "Quantum",
-          url: "#",
+          title: "Starred",
+          url: "/dashboard/pull-requests?filter=starred",
         },
       ],
     },
     {
-      title: "Documentation",
-      url: "#",
+      title: "Repositories",
+      url: "/dashboard/repositories",
+      icon: SquareTerminal,
+      isActive: false,
+      items: [
+        {
+          title: "All Repositories",
+          url: "/dashboard/repositories",
+        },
+        {
+          title: "Starred",
+          url: "/dashboard/repositories?filter=starred",
+        }, 
+      ],
+    },
+    {
+      title: "Github",
+      url: "/dashboard/github",
+      icon: SquareTerminal,
+      isActive: false,
+      items: [
+        {
+          title: "Authentication",
+          url: "/dashboard/github/authentication",
+        },
+        {
+          title: "Organizations",
+          url: "/dashboard/github/organizations",
+        }, 
+        {
+          title: "Account",
+          url: "/dashboard/github/account",
+        },
+        {
+          title: "Accesss",
+          url: "/dashboard/github/access",
+        }
+      ],
+    },
+    {
+      title: "Help",
+      url: "/dashboard/help",
       icon: BookOpen,
       items: [
         {
           title: "Introduction",
-          url: "#",
+          url: "/dashboard/help?section=introduction",
         },
         {
           title: "Get Started",
-          url: "#",
+          url: "/dashboard/help?section=get-started",
         },
         {
           title: "Tutorials",
-          url: "#",
+          url: "/dashboard/help?section=tutorials",
         },
         {
           title: "Changelog",
-          url: "#",
+          url: "/dashboard/help?section=changelog",
         },
       ],
     },
     {
       title: "Settings",
-      url: "#",
+      url: "/dashboard/settings",
       icon: Settings2,
       items: [
         {
           title: "General",
-          url: "#",
+          url: "/dashboard/settings?tab=general",
         },
         {
           title: "Team",
-          url: "#",
+          url: "/dashboard/settings?tab=team",
         },
         {
           title: "Billing",
-          url: "#",
+          url: "/dashboard/settings?tab=billing",
         },
         {
-          title: "Limits",
-          url: "#",
+          title: "Usage",
+          url: "/dashboard/settings?tab=usage",
         },
       ],
     },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
+  ],  
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const router = useRouter(); 
+  const pathName = router.pathname; 
+  const nav = data.navMain.map((n) => {
+    n.isActive = pathName.includes(n.url);
+    return n;
+  });
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain items={nav} />  
       </SidebarContent>
       <SidebarFooter>
         <div className="flex items-center justify-between"> 

@@ -5,12 +5,7 @@ import { FiDollarSign, FiEye, FiPlay, FiSearch } from "react-icons/fi";
 
 export const Features = () => {
   return (
-    <>
-      <div className="flex h-48 flex-col items-center justify-center bg-slate-900"> 
-        <span className="mt-2 block rounded-full bg-indigo-600 px-4 py-1 text-center font-medium text-white md:hidden">
-          Note: This is much cooler on desktop 😊
-        </span>
-      </div>
+    <> 
       <SwapColumnFeatures /> 
     </>
   );
@@ -163,8 +158,8 @@ type FeatureType = {
 const features: FeatureType[] = [
   {
     id: 1,
-    callout: "Get noticed",
-    title: "It's simple",
+    callout: "Automate your workflow",
+    title: "Pull Requests Auto-Reviewed",
     description:
       "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt suscipit fugiat distinctio officia earum eius quae officiis quis harum animi.",
     contentPosition: "r",
@@ -172,8 +167,8 @@ const features: FeatureType[] = [
   },
   {
     id: 2,
-    callout: "Find people",
-    title: "They're all here",
+    callout: "Catch Missed Mistakes",
+    title: "Catch Previously Missed Bugs & Vulnerabilities",
     description:
       "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt suscipit fugiat distinctio officia earum eius quae officiis quis harum animi.",
     contentPosition: "l",
@@ -181,8 +176,8 @@ const features: FeatureType[] = [
   },
   {
     id: 3,
-    callout: "Have fun",
-    title: "Let's party",
+    callout: "Help Developers",
+    title: "Suggested Changes",
     description:
       "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt suscipit fugiat distinctio officia earum eius quae officiis quis harum animi.",
     contentPosition: "r",
@@ -190,8 +185,8 @@ const features: FeatureType[] = [
   },
   {
     id: 4,
-    callout: "Get paid",
-    title: "Cha-ching!",
+    callout: "10x Your Team",
+    title: "Make your developers happy",
     description:
       "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt suscipit fugiat distinctio officia earum eius quae officiis quis harum animi.",
     contentPosition: "l",
