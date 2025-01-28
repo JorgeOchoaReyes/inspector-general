@@ -8,6 +8,7 @@ import {
   Command,
   Frame,
   GalleryVerticalEnd,
+  GithubIcon,
   Map,
   PieChart,
   Settings2,
@@ -26,6 +27,7 @@ import {
 } from "~/components/ui/sidebar";
 import { ModeToggle } from "./theme-changer";
 import { useRouter } from "next/router";
+import { FiGithub } from "react-icons/fi";
 
 const data = {
   user: {
@@ -73,27 +75,18 @@ const data = {
       ],
     },
     {
-      title: "Github",
+      title: "GitHub",
       url: "/dashboard/github",
-      icon: SquareTerminal,
-      isActive: false,
+      icon: GithubIcon, 
       items: [
+        {
+          title: "Synced Repositories",
+          url: "/dashboard/github/repositories",
+        },
         {
           title: "Authentication",
           url: "/dashboard/github/authentication",
-        },
-        {
-          title: "Organizations",
-          url: "/dashboard/github/organizations",
         }, 
-        {
-          title: "Account",
-          url: "/dashboard/github/account",
-        },
-        {
-          title: "Accesss",
-          url: "/dashboard/github/access",
-        }
       ],
     },
     {
