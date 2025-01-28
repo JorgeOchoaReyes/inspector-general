@@ -42,11 +42,12 @@ export const AuroraHero = () => {
           Beta Now Live!
         </span>
         <h1 className="max-w-3xl bg-gradient-to-br from-white to-gray-400 bg-clip-text text-center text-3xl font-medium leading-tight text-transparent sm:text-5xl sm:leading-tight md:text-7xl md:leading-tight">
-          Decrease your SaaS churn by over 90%
+           The AI reviewer to <u className="text-white"> ship faster. </u>
         </h1>
         <p className="my-6 max-w-xl text-center text-base leading-relaxed md:text-lg md:leading-relaxed">
-          Lorem ipsum, dolor sit amet consectetur adipisicing elit. Quae, et,
-          distinctio eum impedit nihil ipsum modi.
+          Inspector General is the AI that helps you ship faster by
+          automatically finding 
+          common issues, vulnerabilities, and bugs in your codebase.
         </p>
         <motion.button
           style={{
