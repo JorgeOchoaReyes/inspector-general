@@ -37,10 +37,10 @@ export const authConfig = {
         id: user.id,
       },
     }), 
-    redirect({url, baseUrl}) {
-      console.log("url", url);
-      console.log("baseUrl", baseUrl);
-      
+    redirect({url, baseUrl}) { 
+      console.log("redirect", url, baseUrl);
+      console.log("redirect", url.startsWith(baseUrl) ? url : (baseUrl + url));
+
       return url.startsWith(baseUrl) ? url : (baseUrl + url);
     }
   },
