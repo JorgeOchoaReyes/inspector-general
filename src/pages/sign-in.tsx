@@ -5,10 +5,18 @@ import { motion } from "framer-motion";
 import { twMerge } from "tailwind-merge";
 import { useRouter } from "next/router";
 import { signIn, signOut, useSession } from "next-auth/react"; 
-import Link from "next/link";
+import Link from "next/link"; 
 
 export default function AuthPage() {
   const router = useRouter();
+  const { data: sessionData } = useSession();
+  const callbackUrl = router.query.callbackUrl as string | undefined;
+
+  if (sessionData && callbackUrl) {
+    console.log("Redirecting to", callbackUrl);
+    console.log("Session data", sessionData);  
+  }
+
   return (
     <div className="bg-zinc-950 flex h-screen items-center text-zinc-200 selection:bg-zinc-600">
       <BubbleButton className="absolute left-4 top-6 text-sm" onClick={() => router.push("/")}> 
@@ -69,9 +77,14 @@ const SocialOptions = () => {
           if (sessionData) { 
             await signOut();
           } else { 
-            await signIn("discord", {
-              callbackUrl: "/dashboard",
-            }); 
+            try {
+              await signIn("discord", { 
+                redirect: true,
+                callbackUrl: "/dashboard",
+              }); 
+            } catch (error) {
+              console.error(error);
+            } 
           }
         }}>
         <SiDiscord />
