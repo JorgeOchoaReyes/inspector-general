@@ -4,19 +4,11 @@ import { FiArrowLeft } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { twMerge } from "tailwind-merge";
 import { useRouter } from "next/router";
-import { signIn, useSession } from "next-auth/react"; 
+import { signIn } from "next-auth/react"; 
 import Link from "next/link"; 
 
 export default function AuthPage() {
-  const router = useRouter();
-  const { data: sessionData } = useSession();
-  const callbackUrl = router.query.callbackUrl as string | undefined;
-
-  if (sessionData && callbackUrl) {
-    console.log("Redirecting to", callbackUrl);
-    console.log("Session data", sessionData);  
-  }
-
+  const router = useRouter(); 
   return (
     <div className="bg-zinc-950 flex h-screen items-center text-zinc-200 selection:bg-zinc-600">
       <BubbleButton className="absolute left-4 top-6 text-sm" onClick={() => router.push("/")}> 
