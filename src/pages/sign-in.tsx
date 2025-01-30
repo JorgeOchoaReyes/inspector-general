@@ -4,7 +4,7 @@ import { FiArrowLeft } from "react-icons/fi";
 import { motion } from "framer-motion";
 import { twMerge } from "tailwind-merge";
 import { useRouter } from "next/router";
-import { signIn, signOut, useSession } from "next-auth/react"; 
+import { signIn, useSession } from "next-auth/react"; 
 import Link from "next/link"; 
 
 export default function AuthPage() {
@@ -62,8 +62,7 @@ const Heading = () => (
   </div>
 );
 
-const SocialOptions = () => {
-  const { data: sessionData } = useSession();
+const SocialOptions = () => { 
   return <div> 
     <div className="flex-row flex gap-3"> 
       <BubbleButton className="flex w-full justify-center py-3" 
@@ -75,8 +74,7 @@ const SocialOptions = () => {
       <BubbleButton className="flex w-full justify-center py-3" 
         onClick={async () => { 
           try {
-            await signIn("discord", { 
-              redirect: true,
+            await signIn("discord", {  
               callbackUrl: "/dashboard",
             }); 
           } catch (error) {

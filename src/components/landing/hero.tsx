@@ -42,7 +42,7 @@ export const AuroraHero = () => {
           Beta Now Live!
         </span>
         <h1 className="max-w-3xl bg-gradient-to-br from-white to-gray-400 bg-clip-text text-center text-3xl font-medium leading-tight text-transparent sm:text-5xl sm:leading-tight md:text-7xl md:leading-tight">
-           The AI reviewer to <u className="text-white"> ship faster. </u>
+           The AI inspector to <u className="text-white"> ship faster. </u>
         </h1>
         <p className="my-6 max-w-xl text-center text-base leading-relaxed md:text-lg md:leading-relaxed">
           Inspector General is the AI that helps you ship faster by

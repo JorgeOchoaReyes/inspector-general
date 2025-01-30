@@ -7,8 +7,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import moment from "moment-timezone";
 import { api } from "~/utils/api"; 
-import { linkToGithubScope, dateFormat } from "~/utils"; 
-import { Label } from "~/components/ui/label";
+import { linkToGithubScope, dateFormat } from "~/utils";  
 import {
   Popover,
   PopoverContent,
