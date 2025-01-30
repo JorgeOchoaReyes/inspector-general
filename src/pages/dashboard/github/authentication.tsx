@@ -157,8 +157,7 @@ export default function Home() {
                                   if(!token || token.length < 1) {
                                     alert("Please enter a valid token.");
                                     return; 
-                                  } 
-                                  //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
+                                  }  
                                   await saveeGitHubToken.mutateAsync({ token: token ?? "" }); 
                                   await readGitHubToken.refetch();
                                   setModelOpen(false);
