@@ -32,11 +32,15 @@ export const Modal: React.FC<{
   buttonNodes,
 }) => {
   return (
-    <Dialog open={open} > 
+    <Dialog open={open} onOpenChange={(open) => {
+      if(open === false && onClose) {
+        onClose();
+      }
+    }}> 
       <DialogTrigger asChild onClick={onOpen}>
         <Button variant={button_variant as "outline" | "link" | "default" | "destructive" | "secondary" | "ghost" | null | undefined}>{button_label}</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
@@ -47,6 +51,9 @@ export const Modal: React.FC<{
           {children}
         </div>
         <DialogFooter>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
           {
             buttonNodes?.map((button, index) => {
               return (
@@ -56,9 +63,6 @@ export const Modal: React.FC<{
               );
             })
           }
-          <Button variant="secondary" onClick={onClose}>
-            Cancel
-          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
