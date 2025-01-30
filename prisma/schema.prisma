@@ -13,18 +13,7 @@ datasource db {
     // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
     url      = env("DATABASE_URL")
 }
-
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
-}
+ 
 
 // Necessary for Next auth
 model Account {
@@ -42,6 +31,7 @@ model Account {
     session_state            String?
     user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
     refresh_token_expires_in Int?
+    github_personal_token    String? // @db.Text
 
     @@unique([provider, providerAccountId])
 }
@@ -61,8 +51,7 @@ model User {
     emailVerified DateTime?
     image         String?
     accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
+    sessions      Session[] 
 }
 
 model VerificationToken {

@@ -73,19 +73,15 @@ const SocialOptions = () => {
         <SiGithub />
       </BubbleButton>
       <BubbleButton className="flex w-full justify-center py-3" 
-        onClick={async () => {
-          if (sessionData) { 
-            await signOut();
-          } else { 
-            try {
-              await signIn("discord", { 
-                redirect: true,
-                callbackUrl: "/dashboard",
-              }); 
-            } catch (error) {
-              console.error(error);
-            } 
-          }
+        onClick={async () => { 
+          try {
+            await signIn("discord", { 
+              redirect: true,
+              callbackUrl: "/dashboard",
+            }); 
+          } catch (error) {
+            console.error(error);
+          }  
         }}>
         <SiDiscord />
       </BubbleButton>
