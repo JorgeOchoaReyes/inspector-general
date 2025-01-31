@@ -109,16 +109,24 @@ export const githubRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       if(!ctx.session) {
         return { success: false };
-      }
-      const { user } = ctx.session;
+      } 
       const githubToken = input.token;
-      const encryptedToken = encrypt(githubToken, process.env.ENCRYPTION_KEY ?? "");
-      
+      const encryptedToken =  githubToken;
+      const account = await ctx.db.account.findFirst({
+        where: { userId: ctx.session.user.id },
+      });
+
+      if(!account) {
+        return { success: false };
+      } 
+
       await ctx.db.gitHubAccount.deleteMany({
         where: {
+          accountId: account.id,
           github_token: encryptedToken,
         },
       });
+
       return { success: true };
     }),
 });
