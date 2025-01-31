@@ -1,4 +1,4 @@
-import { DeleteIcon, Eye, EyeOff, Link2Icon, Loader2, SaveIcon, Trash2Icon, TrashIcon, XIcon } from "lucide-react"; 
+import { Eye, EyeOff, Link2Icon, Loader2, SaveIcon, Trash2Icon, TrashIcon, XIcon } from "lucide-react"; 
 import React from "react";  
 import { FadeInSlide } from "~/components/animation/fadeInSlide";
 import { DashboardLayout } from "~/components/layout/DashboardLayout"; 
@@ -8,21 +8,16 @@ import { Input } from "~/components/ui/input";
 import moment from "moment-timezone";
 import { api } from "~/utils/api"; 
 import { linkToGithubScope, dateFormat } from "~/utils";  
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "~/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger, } from "~/components/ui/popover";
 
 export default function Home() {
-
   const [token, setToken] = React.useState<string | null>(null);
   const [modelOpen, setModelOpen] = React.useState<boolean>(false);
   const [tokenVisible, setTokenVisible] = React.useState<boolean>(false);
   const [deleteAlert, setDeleteAlert] = React.useState<boolean>(false);
 
   const saveeGitHubToken = api.github.saveGitHubAccessToken.useMutation();
-  const readGitHubToken = api.github.readGitHubAccessToken.useQuery();
+  const readGitHubToken = api.github.readGitHubAccessTokens.useQuery();
   const deleteGitHubToken = api.github.deleteGitHubAccessToken.useMutation();
 
   const toggleTokenVisibility = () => setTokenVisible(!tokenVisible); 
@@ -79,6 +74,26 @@ export default function Home() {
                           <p className="text-gray-400">
                             Your GitHub token is already saved.
                           </p>
+                          <div className="flex flex-row items-center justify-between gap-4">
+                            <div className="flex flex-row items-center gap-4">
+                              <img 
+                                src={readGitHubToken.data?.account?.avatar_url}
+                                alt="GitHub Logo" 
+                                className="w-12 h-12  rounded-xl"
+                              />
+                              <a className="text-md text-blue-500" href={`https://github.com/${readGitHubToken.data?.account?.login}`} target="_blank" rel="noopener noreferrer">
+                                {readGitHubToken.data?.account?.login}
+                              </a>
+                            </div>
+                            <div className="flex flex-col gap-2">
+                              <p className="text-gray-500 text-md">
+                                Public Repos: {readGitHubToken.data?.account?.public_repos}
+                              </p>
+                              <p className="text-gray-500 text-md">
+                                Private Repos: {readGitHubToken.data?.account?.private_repos}
+                              </p>
+                            </div>
+                          </div>
                           <div className="flex flex-row items-center">
                             <Input
                               type={tokenVisible ? "text" : "password"}
@@ -109,8 +124,15 @@ export default function Home() {
                                     </Button>
                                     <Button
                                       onClick={async () => {
-                                        await deleteGitHubToken.mutateAsync();
+                                        if(!readGitHubToken.data.token) {
+                                          alert("No token found."); 
+                                          return;
+                                        }
+                                        await deleteGitHubToken.mutateAsync({
+                                          token: readGitHubToken.data.account.github_token,
+                                        });
                                         await readGitHubToken.refetch();
+                                        setDeleteAlert(false);
                                       }}
                                       disabled={deleteGitHubToken.isPending}
                                       variant="destructive"

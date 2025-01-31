@@ -1,5 +1,7 @@
 import crypto from "crypto"; 
 
+const githubApiUrl = "https://api.github.com";
+
 export const encrypt = (text: string, key: string) => {
   const iv = crypto.randomBytes(16); 
   const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(key), iv);
@@ -16,4 +18,12 @@ export const decrypt = (text: string, key: string) => {
   let decrypted = decipher.update(encryptedText);
   decrypted = Buffer.concat([decrypted, decipher.final()]);
   return decrypted.toString();
+};
+
+export const githubGetAccessTokenDetails = async (accessToken: string) => {
+  const response = await fetch(`${githubApiUrl}/user`, {
+    headers: {
+      Authorization: `token ${accessToken}`,
+    },
+  });
 };

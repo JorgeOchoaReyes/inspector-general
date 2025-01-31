@@ -30,10 +30,22 @@ model Account {
     id_token                 String? // @db.Text
     session_state            String?
     user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
-    github_personal_token    String? // @db.Text
+    refresh_token_expires_in Int? 
+    github_accounts          GitHubAccount[] 
 
     @@unique([provider, providerAccountId])
+}
+
+model GitHubAccount {
+    id                      String @id @default(cuid()) 
+    login                   String
+    public_repos            Int
+    private_repos           Int
+    avatar_url              String
+    github_token            String
+    accountId               String
+    account                 Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
 }
 
 model Session {
