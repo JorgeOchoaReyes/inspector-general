@@ -129,9 +129,10 @@ export default function Home() {
                                           return;
                                         }
                                         await deleteGitHubToken.mutateAsync({
-                                          token: readGitHubToken.data.token,
+                                          token: readGitHubToken.data.account.github_token,
                                         });
                                         await readGitHubToken.refetch();
+                                        setDeleteAlert(false);
                                       }}
                                       disabled={deleteGitHubToken.isPending}
                                       variant="destructive"
