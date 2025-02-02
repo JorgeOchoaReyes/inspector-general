@@ -100,7 +100,7 @@ export default function Home() {
                               value={readGitHubToken.data.token}
                               disabled
                             />
-                            <Button className="mr-1" onClick={toggleTokenVisibility}>{tokenVisible ? <Eye /> : <EyeOff />}</Button>
+                            <Button className="mr-3" onClick={toggleTokenVisibility}>{tokenVisible ? <Eye /> : <EyeOff />}</Button>
                             <Popover open={deleteAlert} onOpenChange={setDeleteAlert}>
                               <PopoverTrigger asChild>
                                 <Button variant={"destructive"}> <TrashIcon className="color-red" /> Delete </Button>

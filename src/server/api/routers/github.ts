@@ -129,4 +129,36 @@ export const githubRouter = createTRPCRouter({
 
       return { success: true };
     }),
+  listGitHubRepositories: protectedProcedure
+    .query(async ({ ctx }) => {
+      if(!ctx.session) {
+        return [];
+      }
+      const account = await ctx.db.account.findFirstOrThrow({
+        where: { userId: ctx.session.user.id },
+        select: { 
+          github_accounts: true
+        },
+      });
+      if(!account) {
+        return [];
+      }
+      const githubAccounts = account.github_accounts;
+      if(githubAccounts.length === 0) {
+        return [];
+      }
+      const githubAccount = githubAccounts[0];
+      if(!githubAccount) {
+        return [];
+      }
+      const encryptedToken = githubAccount.github_token;
+      if(!encryptedToken) {
+        return [];
+      }
+      const decryptedToken = decrypt(encryptedToken, process.env.ENCRYPTION_KEY ?? "");
+      const octokit = new Octokit({ auth: decryptedToken });
+      const { data } = await octokit.request("GET /user/repos");
+      
+      return data;
+    }),
 });
