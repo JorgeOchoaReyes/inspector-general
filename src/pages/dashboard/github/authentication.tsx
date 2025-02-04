@@ -16,9 +16,9 @@ export default function Home() {
   const [tokenVisible, setTokenVisible] = React.useState<boolean>(false);
   const [deleteAlert, setDeleteAlert] = React.useState<boolean>(false);
 
-  const saveeGitHubToken = api.github.saveGitHubAccessToken.useMutation();
-  const readGitHubToken = api.github.readGitHubAccessTokens.useQuery();
-  const deleteGitHubToken = api.github.deleteGitHubAccessToken.useMutation();
+  const saveeGitHubToken = api.repos.saveGitHubAccessToken.useMutation();
+  const readGitHubToken = api.repos.readGitHubAccessTokens.useQuery();
+  const deleteGitHubToken = api.repos.deleteGitHubAccessToken.useMutation();
 
   const toggleTokenVisibility = () => setTokenVisible(!tokenVisible); 
 
