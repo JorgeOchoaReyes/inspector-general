@@ -45,10 +45,30 @@ model GitHubAccount {
     github_token            String
     accountId               String
     account                 Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-    // repos 
+    repos                   GitHubRepo[] 
 }
 
-// model GitHubRepo {
+model GitHubRepo {
+    id                      String @id @default(cuid()) 
+    githubId                String
+    name                    String
+    full_name               String
+    private                 Boolean
+    description             String
+    fork                    Boolean
+    url                     String 
+    git_url                 String
+    ssh_url                 String
+    clone_url               String
+    svn_url                 String
+    homepage                String
+    size                    Int
+    stargazers_count        Int
+    watchers_count          Int 
+
+    accountId               String
+    account                 GitHubAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)    
+}
 
 
 model Session {

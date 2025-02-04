@@ -4,9 +4,10 @@ import {
   createTRPCRouter,
   protectedProcedure, 
 } from "~/server/api/trpc";
-import { Octokit } from "@octokit/core";
+import { v4 as uuid } from "uuid";
+import { Octokit } from "@octokit/core"; 
 
-export const githubRouter = createTRPCRouter({ 
+export const reposRouter = createTRPCRouter({ 
   saveGitHubAccessToken: protectedProcedure
     .input(z.object({ token: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
@@ -137,7 +138,8 @@ export const githubRouter = createTRPCRouter({
       const account = await ctx.db.account.findFirstOrThrow({
         where: { userId: ctx.session.user.id },
         select: { 
-          github_accounts: true
+          github_accounts: true,
+          id: true,
         },
       });
       if(!account) {
@@ -158,7 +160,101 @@ export const githubRouter = createTRPCRouter({
       const decryptedToken = decrypt(encryptedToken, process.env.ENCRYPTION_KEY ?? "");
       const octokit = new Octokit({ auth: decryptedToken });
       const { data } = await octokit.request("GET /user/repos");
+
+      const currentRepos = await ctx.db.gitHubRepo.findMany({
+        where: { accountId: account.github_accounts?.[0]?.id },
+      });
+
+      type RepoSynced = typeof data[0] & { synced: boolean };
+ 
+      const repos = data.map((repo) => { 
+        const synced = currentRepos.some((currentRepo) => currentRepo.githubId === repo.id.toString());
+        return { ...repo, synced };
+      }) as RepoSynced[];
       
-      return data;
+      return repos;
+    }),
+  syncGitHubRepository: protectedProcedure
+    .input(z.object({
+      githubId: z.string().min(1),
+      name: z.string(),
+      full_name: z.string(),
+      private: z.boolean(),
+      description: z.string(),
+      fork: z.boolean(),
+      url: z.string(),
+      git_url: z.string(),
+      ssh_url: z.string(),
+      clone_url: z.string(),
+      svn_url: z.string(),
+      homepage: z.string(),
+      size: z.number(),
+      stargazers_count: z.number(),
+      watchers_count: z.number(), 
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if(!ctx.session) {
+        return { success: false };
+      }
+
+      const { githubId, name, full_name, private: isPrivate, description, fork, url, git_url, ssh_url, clone_url, svn_url, homepage, size, stargazers_count, watchers_count, } = input;
+      const account = await ctx.db.account.findFirst({
+        where: { userId: ctx.session.user.id },
+      });
+
+      if(!account) {
+        return { success: false };
+      }
+
+      const githubAccount = await ctx.db.gitHubAccount.findFirst({
+        where: { accountId: account.id },
+      });
+
+      if(!githubAccount) {
+        return { success: false };
+      }
+
+      const id = uuid();
+      await ctx.db.gitHubRepo.upsert({
+        where: { id: id },
+        create: { 
+          githubId,
+          name,
+          full_name,
+          private: isPrivate,
+          description,
+          fork,
+          url,
+          git_url,
+          ssh_url,
+          clone_url,
+          svn_url,
+          homepage,
+          size,
+          stargazers_count,
+          watchers_count, 
+          accountId: githubAccount.id,
+        },
+        update: {
+          name,
+          full_name,
+          private: isPrivate,
+          description,
+          fork,
+          url,
+          git_url,
+          ssh_url,
+          clone_url,
+          svn_url,
+          homepage,
+          size,
+          stargazers_count,
+          watchers_count, 
+          accountId: githubAccount.id,
+        },
+      });
+
+      return { success: true };
+       
     }),
 });
