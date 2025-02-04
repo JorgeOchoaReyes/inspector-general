@@ -6,20 +6,17 @@ import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "~/server/api/root";
 import { DataTable } from "~/components/table";
 import { SiGithub } from "react-icons/si";
-import { CheckCheckIcon, CheckCircle, CheckIcon, Link2, Loader2, Lock, Unplug } from "lucide-react";
+import { Loader2, Lock, Unplug } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { useRouter } from "next/router";
  
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type listGitHubRepositoriesOutput = RouterOutput["repos"]["listGitHubRepositories"];
 
 export default function Repos() { 
   const listGithubRepos = api.repos.listGitHubRepositories.useQuery(); 
-  const syncRepo = api.repos.syncGitHubRepository.useMutation();
-  const router = useRouter();
   
   return (
-    <DashboardLayout title="Sync Repositories">
+    <DashboardLayout title="Repositories">
       <FadeInSlide>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0"> 
           <div className="min-h-[100vh] flex-1 rounded-xl  md:min-h-min items-start justify-start flex"> 
@@ -74,67 +71,15 @@ export default function Repos() {
                         header: "Sync",
                         cell: (cell) => {
                           const row = cell.row.original;
-                          const isSynced = row.synced;
-                          return (<>
-                            {
-                              isSynced ? <Button 
-                                className="text-green-500"
-                                variant={"link"} 
-                              >
-                                <CheckCircle size={10}/> Synced
-                              </Button> : <Button
-                                className="btn btn-primary"
-                                disabled={syncRepo.isPending}
-                                onClick={ async () => {
-                                  const results = await syncRepo.mutateAsync({
-                                    githubId: row.id.toString(),
-                                    name: row.name,
-                                    full_name: row.full_name,
-                                    private: row.private,
-                                    description: row.description ?? "",
-                                    fork: row.fork,
-                                    url: row.url,
-                                    git_url: row.git_url,
-                                    ssh_url: row.ssh_url,
-                                    clone_url: row.clone_url,
-                                    svn_url: row.svn_url,
-                                    homepage: row.homepage ?? "",
-                                    size: row.size,
-                                    stargazers_count: row.stargazers_count,
-                                    watchers_count: row.watchers_count, 
-                                  });
-                                  if(results.success) {
-                                    await listGithubRepos.refetch();
-                                  } else {
-                                    alert("Failed to sync repository");
-                                  }
-                                }}
-                              >
-                                {syncRepo.isPending ? <Loader2 className="animate-spin" /> : <>Sync <Unplug /> </>}
-                              </Button>
-                            }
-                          </>
-                          );
-                        }
-                      },
-                      {
-                        accessorKey: "",
-                        header: "Details",
-                        cell: (cell) => {
-                          const row = cell.row.original;
-                          const isSynced = row.synced;
                           return (
-                            <>
-                              {
-                                isSynced ? <Button 
-                                  className="text-blue-500"
-                                  variant={"link"} onClick={async () => {
-                                    await router.push(`/dashboard/repositories/${row.id}`);
-                                  }}>
-                                  <Link2 /> View Details
-                                </Button> :  null
-                              }
-                            </>
+                            <Button
+                              className="btn btn-primary"
+                              onClick={() => {
+                                console.log("Syncing", cell.row.original.full_name);
+                              }}
+                            > 
+                             Sync <Unplug /> 
+                            </Button>
                           );
                         }
                       },
