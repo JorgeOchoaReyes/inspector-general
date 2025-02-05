@@ -67,7 +67,8 @@ model GitHubRepo {
     watchers_count          Int 
 
     accountId               String
-    account                 GitHubAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)    
+    account                 GitHubAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)  
+    starred                 Boolean  
 }
 
 
