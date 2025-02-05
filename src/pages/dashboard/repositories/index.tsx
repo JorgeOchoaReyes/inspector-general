@@ -4,16 +4,17 @@ import { DashboardLayout } from "~/components/layout/DashboardLayout";
 import { api } from "~/utils/api";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "~/server/api/root";
-import { DataTable } from "~/components/table";
-import { SiGithub } from "react-icons/si";
-import { Loader2, Lock, Unplug } from "lucide-react";
+import { DataTable } from "~/components/table"; 
+import { Loader2, Lock, Star, Unplug } from "lucide-react";
 import { Button } from "~/components/ui/button";
+import { useRouter } from "next/router";
  
 type RouterOutput = inferRouterOutputs<AppRouter>;
-type listGitHubRepositoriesOutput = RouterOutput["repos"]["listGitHubRepositories"];
+type listSyncedGitHubRepositories = RouterOutput["repos"]["listSyncedGitHubRepositories"];
 
 export default function Repos() { 
-  const listGithubRepos = api.repos.listGitHubRepositories.useQuery(); 
+  const listGithubRepos = api.repos.listSyncedGitHubRepositories.useQuery(); 
+  const router = useRouter();
   
   return (
     <DashboardLayout title="Repositories">
@@ -23,10 +24,10 @@ export default function Repos() {
             <div className="flex flex-col gap-4 p-4 pt-10 md:w-full"> 
               <div className="flex flex-row justify-between items-start gap-4"> 
                 <h1 className="text-2xl font-semibold">
-                  Repositories
+                  Synced GitHub Repositories
                   <br /> 
                   <span className="text-base font-normal text-gray-500">
-                    Connect your repositories to allow Inpector General to review your code!
+                    View details of your synced GitHub repositories
                   </span>
                 </h1> 
               </div>
@@ -52,39 +53,33 @@ export default function Repos() {
                         cell: (cell) => { 
                           const isPrivate = (cell.row.original).private;
                           return (
-                            <div className="flex flex-row items-center gap-2">
-                              <SiGithub className="text-2xl mr-2" />
-                              <a 
-                                href={`https://github.com/${cell.getValue() as string}`}
-                                target="_blank"
-                                rel="noreferrer"
+                            <div className="flex flex-row items-center gap-2"> 
+                              <Star size={18} />
+                              <a  
+                                href={`/dashboard/repositories/${cell.row.original.id}`} 
                                 className="text-blue-500"
-                              >{cell.getValue() as string}</a>
-                              <div className="bg-secondary rounded-3xl text-xs text-gray-400 p-2"> {cell.row.original.default_branch} </div>
+                              >{cell.getValue() as string}</a> 
                               {isPrivate &&  <Lock size={18} />}
                             </div>
                           );
                         }
-                      }, 
+                      },  
                       {
                         accessorKey: "",
-                        header: "Sync",
-                        cell: (cell) => {
-                          const row = cell.row.original;
+                        header: "View",
+                        cell: (cell) => { 
+                          const isPrivate = (cell.row.original).private;
                           return (
-                            <Button
-                              className="btn btn-primary"
-                              onClick={() => {
-                                console.log("Syncing", cell.row.original.full_name);
-                              }}
-                            > 
-                             Sync <Unplug /> 
+                            <Button onClick={async ()=>{
+                              await router.push(`/dashboard/repositories/${cell.row.original.id}`);
+                            }}>
+                              View Details
                             </Button>
                           );
                         }
-                      },
+                      },  
                     ]}
-                    data={(listGithubRepos.data ?? [] as listGitHubRepositoriesOutput).sort((a, b) => a.full_name.localeCompare(b.full_name))}
+                    data={(listGithubRepos.data ?? [] as listSyncedGitHubRepositories).sort((a, b) => a.full_name.localeCompare(b.full_name))}
                   />
               }
             </div>        

@@ -6,6 +6,7 @@ import {
 } from "~/server/api/trpc";
 import { v4 as uuid } from "uuid";
 import { Octokit } from "@octokit/core"; 
+import { list } from "postcss";
 
 export const reposRouter = createTRPCRouter({ 
   saveGitHubAccessToken: protectedProcedure
@@ -256,5 +257,66 @@ export const reposRouter = createTRPCRouter({
 
       return { success: true };
        
+    }),
+  listSyncedGitHubRepositories: protectedProcedure
+    .query(async ({ ctx }) => {
+      if(!ctx.session) {
+        return [];
+      }
+      const account = await ctx.db.account.findFirstOrThrow({
+        where: { userId: ctx.session.user.id },
+        select: { 
+          github_accounts: true,
+          id: true,
+        },
+      });
+      if(!account) {
+        return [];
+      }
+      const githubAccounts = account.github_accounts;
+      if(githubAccounts.length === 0) {
+        return [];
+      }
+      const githubAccount = githubAccounts[0];
+      if(!githubAccount) {
+        return [];
+      } 
+
+      const currentRepos = await ctx.db.gitHubRepo.findMany({
+        where: { accountId: account.github_accounts?.[0]?.id },
+      });
+ 
+      return currentRepos;
+    }),
+  getOneRepoDetails: protectedProcedure
+    .input(z.object({ id: z.string().min(1) }))
+    .query(async ({ ctx, input }) => {
+      if(!ctx.session) {
+        return null;
+      }
+      const account = await ctx.db.account.findFirstOrThrow({
+        where: { userId: ctx.session.user.id },
+        select: { 
+          github_accounts: true,
+          id: true,
+        },
+      });
+      if(!account) {
+        return null;
+      }
+      const githubAccounts = account.github_accounts;
+      if(githubAccounts.length === 0) {
+        return null;
+      }
+      const githubAccount = githubAccounts[0];
+      if(!githubAccount) {
+        return null;
+      } 
+
+      const currentRepo = await ctx.db.gitHubRepo.findFirst({
+        where: { id: input.id },
+      });
+
+      return currentRepo;
     }),
 });
