@@ -68,7 +68,7 @@ model GitHubRepo {
 
     accountId               String
     account                 GitHubAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)  
-    starred                 Boolean  
+    starred                 Boolean  @default(false)
 }
 
 
