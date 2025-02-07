@@ -1,4 +1,5 @@
 import crypto from "crypto"; 
+import { type Context } from "./api/trpc";
 
 const githubApiUrl = "https://api.github.com";
 
@@ -20,10 +21,24 @@ export const decrypt = (text: string, key: string) => {
   return decrypted.toString();
 };
 
-export const githubGetAccessTokenDetails = async (accessToken: string) => {
-  const response = await fetch(`${githubApiUrl}/user`, {
-    headers: {
-      Authorization: `token ${accessToken}`,
-    },
+export const getUserInfo = async (ctx: Context) => { 
+  const defaultAccount = { token: "", account: null };
+  if(!ctx.session) {
+    return defaultAccount;
+  }
+  const userAccount = await ctx.db.account.findFirst({
+    where: { userId: ctx.session.user.id }, include: { github_accounts: true },
   });
+  if(!userAccount) {
+    return defaultAccount;
+  }
+  const githubAccount = userAccount.github_accounts[0];
+  if(!githubAccount) {
+    return defaultAccount;
+  }
+  const token = decrypt(githubAccount?.github_token, process.env.ENCRYPTION_KEY ?? "");
+  return {
+    token,
+    account: userAccount
+  };
 };
