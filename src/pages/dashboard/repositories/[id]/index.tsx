@@ -4,13 +4,17 @@ import { api } from "~/utils/api";
 import { useRouter } from "next/router";
 import { GitForkIcon, GitPullRequest, Link2Icon, Loader2, Lock, LockKeyholeOpenIcon, MemoryStick, Star, } from "lucide-react";
 import { FiGithub } from "react-icons/fi";
+import { DataTable } from "~/components/table"; 
+import { Toggle } from "~/components/toggle";
+import React from "react";  
+import { dateToLocal } from "~/utils";
 
 export default function Home(){   
   const router = useRouter();
+  const [filter, setFitler] = React.useState("all");
   const pathId = router.query.id as string;
   const repoDetails = api.repos.getOneRepoDetails.useQuery({ id: pathId });
-  const pullRequest = api.pullRequest.listPullRequest.useQuery({ repo: repoDetails.data?.name ?? "", filterPullRequest: "all" });
-  
+  const pullRequest = api.pullRequest.listPullRequest.useQuery({ repo: repoDetails.data?.name ?? "", filterPullRequest: filter }); 
 
   return (
     <DashboardLayout title={"Repo Details"}>  
@@ -30,7 +34,7 @@ export default function Home(){
                         {repoDetails.data?.full_name.split("/")[1]}
                         <br /> 
                         <div className="font-normal text-sm text-gray-500 flex-wrap flex max-w-[70%] mt-2">
-                         Repo Description: {repoDetails.data?.description === "" ?  "No Description . . . ." : repoDetails.data?.description}
+                         Repo Description: {repoDetails.data?.description === "" ?  "N/A" : repoDetails.data?.description}
                         </div>
                       </h1> 
                     </div> 
@@ -79,19 +83,93 @@ export default function Home(){
                         </div>
                       </div>  
                       <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min aspect-video mt-5"> 
-                        <h2 className="text-2xl font-semibold p-6 flex flex-row items-center gap-4"> 
-                          <GitPullRequest /> Pull Request 
-                        </h2>
-
+                        <div className="flex flex-row justify-between items-center gap-4 p-6 ">  
+                          <h2 className="text-2xl font-semibold flex flex-row items-center gap-4"> 
+                            <GitPullRequest /> Pull Request 
+                          </h2>
+                          <Toggle 
+                            value={filter}
+                            onChange={(e) => setFitler(e)}
+                            options={[
+                              { label: "All", value: "all" },
+                              { label: "Open", value: "open" },
+                              { label: "Closed", value: "closed" },
+                            ]}
+                          />
+                        </div> 
                         <div className="flex flex-col gap-4 p-4 pt-0"> 
                           {
-
-                          }
-                          <div className="flex flex-col gap-4 rounded-xl p-4 items-center justify-center"> 
-                            <Loader2 className="animate-spin" /> 
-                          </div>
-                        </div>
-
+                            pullRequest.isPending ? (
+                              <div className="flex flex-col gap-4 rounded-xl p-4 items-center justify-center"> 
+                                <Loader2 className="animate-spin" /> 
+                              </div>
+                            ) : <DataTable
+                              columns={[
+                                {
+                                  accessorKey: "title",
+                                  header: "Title",
+                                  cell: (cell) => {  
+                                    return (
+                                      <div className="flex flex-row items-center gap-2"> 
+                                        <GitPullRequest />
+                                        <a  
+                                          href={`/dashboard/pull-requests/${cell.row.original.id}?repo=${repoDetails.data?.githubId}`} 
+                                          className="text-blue-500"
+                                        >{cell.getValue() as string} #{cell.row.original.number}</a> 
+                                      </div>
+                                    );
+                                  }
+                                },   
+                                {
+                                  accessorKey: "created_at",
+                                  header: "Created",
+                                  cell: (cell) => {  
+                                    return (
+                                      <div className="flex flex-row items-center gap-2"> 
+                                        {dateToLocal(cell.getValue() as string) }
+                                      </div>
+                                    );
+                                  }
+                                },  
+                                {
+                                  accessorKey: "updated_at",
+                                  header: "Updated",
+                                  cell: (cell) => {  
+                                    return (
+                                      <div className="flex flex-row items-center gap-2"> 
+                                        {dateToLocal(cell.getValue() as string) }
+                                      </div>
+                                    );
+                                  }
+                                },  
+                                {
+                                  accessorKey: "merged_at",
+                                  header: "Merged",
+                                  cell: (cell) => {  
+                                    return (
+                                      <div className="flex flex-row items-center gap-2"> 
+                                        {dateToLocal(cell.getValue() as string) }
+                                      </div>
+                                    );
+                                  }
+                                },  
+                                {
+                                  accessorKey: "state",
+                                  header: "State",
+                                  cell: (cell) => {  
+                                    const bgColor = cell.getValue() === "open" ? "bg-orange-500" : "bg-purple-500";
+                                    return (
+                                      <div className={`flex justify-center flex-row items-center ${bgColor} rounded-md content-center p-1`}> 
+                                        {cell.getValue() as string}
+                                      </div>
+                                    );
+                                  }
+                                }, 
+                              ]}
+                              data={pullRequest?.data?.success ? pullRequest?.data?.success : []}
+                            />
+                          } 
+                        </div> 
                       </div>
                     </div>
                   </FadeInSlide>

@@ -1,4 +1,4 @@
-import { decrypt, encrypt, getUserInfo } from "../../server_util";
+import { getUserInfo } from "../../server_util";
 import { z } from "zod"; 
 import {
   createTRPCRouter,
@@ -6,30 +6,32 @@ import {
 } from "~/server/api/trpc";
 import { v4 as uuid } from "uuid";
 import { Octokit } from "@octokit/core";  
+import type { Endpoints } from "@octokit/types";
+ 
+type listUserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"];
 
 export const pullRequestRouter = createTRPCRouter({ 
   listPullRequest: protectedProcedure
     .input(z.object({ 
-      repo: z.string().min(1),
-      filterPullRequest: z.string().min(1)
+      repo: z.string(),
+      filterPullRequest: z.string()
     }))
     .query(async ({ ctx, input }) => {
       const { filterPullRequest, repo } = input;
       if(!repo || repo === "") {
-        return { success: false };
+        return { success: [] };
       }
       if(!ctx.session) {
-        return { success: false };
+        return { success: [] };
       }
       try { 
         const userInfo = await getUserInfo(ctx);
         if(!userInfo) {
-          return { success: false };
+          return { success: [] };
         }
         const { token } = userInfo; 
         const github = new Octokit({ auth: token }); 
-        const owner = userInfo.account?.github_accounts[0]?.login ?? "";
-
+        const owner = userInfo.account?.github_accounts[0]?.login ?? ""; 
         const pullRequest = await github.request(`GET /repos/${owner}/${repo}/pulls`, {
           owner: "OWNER",
           repo: "REPO",
@@ -37,12 +39,18 @@ export const pullRequestRouter = createTRPCRouter({
           headers: {
             "X-GitHub-Api-Version": "2022-11-28"
           }
-        });  
- 
-        return { success: pullRequest };
+        });   
+
+        const listPrs = pullRequest as listUserReposResponse;
+        
+        if(!listPrs) {
+          return { success: [] };
+        } 
+
+        return { success: listPrs.data };
       } catch (error) {
         console.error(error);
-        return { success: false };
+        return { success: [] };
       }
     }), 
 
