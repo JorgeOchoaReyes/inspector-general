@@ -1,18 +1,13 @@
 "use client";
 
 import * as React from "react";
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
+import { 
+  BookA,
+  BookAIcon,
+  BookOpen, 
   GithubIcon,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
+  GitPullRequest, 
+  Settings2, 
 } from "lucide-react";
 
 import { NavMain } from "~/components/nav-main"; 
@@ -26,8 +21,7 @@ import {
   SidebarRail,
 } from "~/components/ui/sidebar";
 import { ModeToggle } from "./theme-changer";
-import { useRouter } from "next/router";
-import { FiGithub } from "react-icons/fi";
+import { useRouter } from "next/router"; 
 
 const data = {
   user: {
@@ -42,7 +36,7 @@ const data = {
     {
       title: "Pull Request",
       url: "/dashboard/pull-requests",
-      icon: Bot,
+      icon: GitPullRequest,
       items: [
         {
           title: "Recent",
@@ -61,7 +55,7 @@ const data = {
     {
       title: "Repositories",
       url: "/dashboard/repositories",
-      icon: SquareTerminal,
+      icon: BookAIcon,
       isActive: false,
       items: [
         {

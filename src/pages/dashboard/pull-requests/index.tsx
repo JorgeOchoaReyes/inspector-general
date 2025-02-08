@@ -12,7 +12,7 @@ export default function Home(){
           <div className="aspect-video rounded-xl bg-muted/50" />
         </div> 
         <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min"> 
-          <div>Repo  {"/repositories/id/pull-request/id"}</div>
+          <div>Repo {"/pull-request"} </div>;
         </div>
       </div>
     </DashboardLayout>
