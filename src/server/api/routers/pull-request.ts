@@ -52,6 +52,15 @@ export const pullRequestRouter = createTRPCRouter({
         console.error(error);
         return { success: [] };
       }
-    }), 
+    }),  
+  savePullRequest: protectedProcedure
+    .input(z.object({ 
+      repo: z.string(),
+      title: z.string(),
+      body: z.string()
+    }))
 
+    .mutation(async ({ ctx, input }) => {
+      const { repo, title, body } = input;
+    }),
 });
