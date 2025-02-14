@@ -9,6 +9,7 @@ import { Toggle } from "~/components/toggle";
 import React from "react";  
 import { dateToLocal } from "~/utils";
 import { FaPersonMilitaryRifle } from "react-icons/fa6";
+import { Button } from "~/components/ui/button";
 
 export default function Home(){   
   const router = useRouter();
@@ -82,15 +83,24 @@ export default function Home(){
                             <FaPersonMilitaryRifle /> Chat Inspector General  
                           </h3>  
                           <div className="flex flex-row items-center gap-2 justify-center"> 
-                            <div className="flex flex-col items-center gap-2"> 
-                              <div className="flex flex-row items-center gap-2"> 
-                                <div className="bg-green-500 rounded-full h-4 w-4"></div>
-                                <p>Active</p>
-                              </div>
-                              <div className="flex flex-row items-center gap-2"> 
-                                <div className="bg-red-500 rounded-full h-4 w-4"></div>
-                                <p>Inactive</p>
-                              </div>
+                            <div className="flex flex-col-reverse items-center gap-2 mt-10">  
+                              <div className="mb-10"> 
+                                <Button className="" variant={"secondary"} onClick={async () => await router.push(`/dashboard/repositories/${pathId}/bot`)}>
+                                  { 
+                                    repoDetails.data?.repo_inspected ? 
+                                      <div className="flex flex-row items-center gap-2"> 
+                                        <div className="bg-green-500 rounded-full h-4 w-4"></div>
+                                        <p>Active</p>
+                                      </div>
+                                      :
+                                      <div className="flex flex-row items-center gap-2"> 
+                                        <div className="bg-red-500 rounded-full h-4 w-4"></div>
+                                        <p>Inactive</p>
+                                      </div>
+                                  }  
+                                  {repoDetails.data?.repo_inspected ? "Chat Now" : "Initiate Chat"}
+                                </Button>
+                              </div> 
                             </div> 
                           </div>
                         </div>
@@ -126,7 +136,7 @@ export default function Home(){
                                       <div className="flex flex-row items-center gap-2"> 
                                         <GitPullRequest />
                                         <a  
-                                          href={`/dashboard/pull-requests/${cell.row.original.id}?repo=${repoDetails.data?.githubId}`} 
+                                          href={`/dashboard/pull-requests/${cell.row.original.number}?repo=${repoDetails.data?.githubId}`} 
                                           className="text-blue-500"
                                         >{cell.getValue() as string} #{cell.row.original.number}</a> 
                                       </div>
