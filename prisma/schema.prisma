@@ -65,6 +65,8 @@ model GitHubRepo {
     size                    Int
     stargazers_count        Int
     watchers_count          Int 
+    
+    repo_inspected          Boolean @default(false)
 
     accountId               String
     account                 GitHubAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)  

@@ -8,6 +8,7 @@ import { DataTable } from "~/components/table";
 import { Toggle } from "~/components/toggle";
 import React from "react";  
 import { dateToLocal } from "~/utils";
+import { FaPersonMilitaryRifle } from "react-icons/fa6";
 
 export default function Home(){   
   const router = useRouter();
@@ -77,9 +78,21 @@ export default function Home(){
                           </div>
                         </div>
                         <div className="aspect-video rounded-xl bg-muted/50 flex flex-col items-center justify-center">
-                          <h3 className="text-2xl font-semibold">
-                            Recent Pull Requests
-                          </h3> 
+                          <h3 className="text-2xl font-semibold gap-4 flex flex-row">
+                            <FaPersonMilitaryRifle /> Chat Inspector General  
+                          </h3>  
+                          <div className="flex flex-row items-center gap-2 justify-center"> 
+                            <div className="flex flex-col items-center gap-2"> 
+                              <div className="flex flex-row items-center gap-2"> 
+                                <div className="bg-green-500 rounded-full h-4 w-4"></div>
+                                <p>Active</p>
+                              </div>
+                              <div className="flex flex-row items-center gap-2"> 
+                                <div className="bg-red-500 rounded-full h-4 w-4"></div>
+                                <p>Inactive</p>
+                              </div>
+                            </div> 
+                          </div>
                         </div>
                       </div>  
                       <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min aspect-video mt-5"> 
