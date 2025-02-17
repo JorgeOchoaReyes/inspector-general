@@ -15,4 +15,4 @@ export default function Home(){
       </div>
     </DashboardLayout>
   );
-}; 
+};                 

@@ -79,7 +79,7 @@ const data = {
         },
         {
           title: "Authentication",
-          url: "/dashboard/github/authentication",
+          url: "/dashboard/github",
         }, 
       ],
     },
