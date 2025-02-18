@@ -136,7 +136,7 @@ export default function Home(){
                                       <div className="flex flex-row items-center gap-2"> 
                                         <GitPullRequest />
                                         <a  
-                                          href={`/dashboard/pull-requests/${cell.row.original.number}?repo=${repoDetails.data?.githubId}`} 
+                                          href={`/dashboard/pull-requests/${cell.row.original.number}?repo=${repoDetails.data?.name}`} 
                                           className="text-blue-500"
                                         >{cell.getValue() as string} #{cell.row.original.number}</a> 
                                       </div>
