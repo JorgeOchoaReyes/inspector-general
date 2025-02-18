@@ -6,6 +6,7 @@ import { ThemeProvider } from "~/components/theme-provider";
 
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
+import "diff2html/bundles/css/diff2html.min.css";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,

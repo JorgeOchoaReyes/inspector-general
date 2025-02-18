@@ -67,8 +67,7 @@ export default function Repos() {
                       {
                         accessorKey: "",
                         header: "View",
-                        cell: (cell) => { 
-                          const isPrivate = (cell.row.original).private;
+                        cell: (cell) => {  
                           return (
                             <Button onClick={async ()=>{
                               await router.push(`/dashboard/repositories/${cell.row.original.id}`);
