@@ -7,8 +7,7 @@ import {
   CreditCard,
   LogOut,
   Sparkles,
-} from "lucide-react";
-
+} from "lucide-react"; 
 import {
   Avatar,
   AvatarFallback,
@@ -29,7 +28,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "~/components/ui/sidebar"; 
-import { signOut } from "next-auth/react"; 
+import { signOut } from "next-auth/react";  
 
 export function NavUser({
   user,
@@ -40,7 +39,7 @@ export function NavUser({
     avatar: string
   }
 }) {
-  const { isMobile } = useSidebar();
+  const { isMobile } = useSidebar(); 
 
   return (
     <SidebarMenu>

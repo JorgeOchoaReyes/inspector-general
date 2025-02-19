@@ -22,16 +22,9 @@ import {
 } from "~/components/ui/sidebar";
 import { ModeToggle } from "./theme-changer";
 import { useRouter } from "next/router"; 
+import { useSession } from "next-auth/react";
 
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-  
-  ],
+const data = { 
   navMain: [
     {
       title: "Pull Request",
@@ -140,10 +133,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return n;
   });
 
+  const { data: userData } = useSession();
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher  />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={nav} />  
@@ -153,7 +148,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <div className="text-sm text-muted-foreground">Theme</div> 
           <ModeToggle />
         </div>
-        <NavUser user={data.user} />
+        <NavUser user={
+          data ? {
+            name: userData?.user.name ?? "",
+            email: userData?.user.email ?? "",
+            avatar: userData?.user.image ?? "",
+          } : {
+            name: "Guest",
+            email: "",
+            avatar: "",
+          }
+        } />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
