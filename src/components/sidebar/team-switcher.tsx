@@ -19,16 +19,7 @@ import {
 } from "~/components/ui/sidebar";
 import { useRouter } from "next/router";
 
-export function TeamSwitcher({
-  teams,
-}: {
-  teams: {
-    name: string
-    logo: React.ElementType
-    plan: string
-  }[]
-}) {
-  const { isMobile } = useSidebar(); 
+export function TeamSwitcher() { 
   const router = useRouter();
 
   return (
@@ -39,9 +30,9 @@ export function TeamSwitcher({
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
           onClick={() => router.push("/dashboard")}
         >
-          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+          <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-sidebar-primary-foreground">
             <img
-              src="/inspector-general.webp"
+              src="/inspector-general.png"
               alt="" 
               className="rounded-md"
             />
@@ -50,7 +41,7 @@ export function TeamSwitcher({
             <span className="truncate font-semibold">
               Inspector General
             </span>
-            <span className="truncate text-xs">Free Plan</span>
+            <span className="truncate text-xs">Powered by NZQR</span>
           </div> 
         </SidebarMenuButton> 
       </SidebarMenuItem>

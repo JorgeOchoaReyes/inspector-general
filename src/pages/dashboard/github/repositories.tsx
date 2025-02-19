@@ -6,15 +6,17 @@ import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "~/server/api/root";
 import { DataTable } from "~/components/table";
 import { SiGithub } from "react-icons/si";
-import { CheckCheckIcon, CheckCircle, CheckIcon, Link2, Loader2, Lock, Unplug } from "lucide-react";
+import { CheckCircle, Link2, Loader2, Lock, Unplug } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import { useRouter } from "next/router";
+import { useRouter } from "next/router"; 
  
 type RouterOutput = inferRouterOutputs<AppRouter>;
 type listGitHubRepositoriesOutput = RouterOutput["repos"]["listGitHubRepositories"];
 
-export default function Repos() { 
-  const listGithubRepos = api.repos.listGitHubRepositories.useQuery(); 
+export default function Repos() {  
+  const listGithubRepos = api.repos.listGitHubRepositories.useQuery({
+    
+  }); 
   const syncRepo = api.repos.syncGitHubRepository.useMutation();
   const router = useRouter();
   
@@ -129,7 +131,11 @@ export default function Repos() {
                                 isSynced ? <Button 
                                   className="text-blue-500"
                                   variant={"link"} onClick={async () => {
-                                    await router.push(`/dashboard/repositories/${row.id}`);
+                                    if(!row.url_path_id) {
+                                      alert("No url path id found");
+                                      return;
+                                    }
+                                    await router.push(`/dashboard/repositories/${row.url_path_id}`);
                                   }}>
                                   <Link2 /> View Details
                                 </Button> :  null
@@ -139,9 +145,9 @@ export default function Repos() {
                         }
                       },
                     ]}
-                    data={(listGithubRepos.data ?? [] as listGitHubRepositoriesOutput).sort((a, b) => a.full_name.localeCompare(b.full_name))}
+                    data={(listGithubRepos.data ?? [] as listGitHubRepositoriesOutput)}
                   />
-              }
+              } 
             </div>        
           </div>
         </div>
