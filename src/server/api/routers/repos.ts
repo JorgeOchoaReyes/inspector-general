@@ -5,7 +5,13 @@ import {
   protectedProcedure, 
 } from "~/server/api/trpc";
 import { v4 as uuid } from "uuid";
-import { Octokit } from "@octokit/core";  
+import { Octokit as MyOctoki } from "@octokit/core";  
+import {
+  paginateRest,
+  composePaginateRest,
+} from "@octokit/plugin-paginate-rest";
+
+const Octokit = MyOctoki.plugin(paginateRest, composePaginateRest);
 
 export const reposRouter = createTRPCRouter({ 
   saveGitHubAccessToken: protectedProcedure
@@ -131,6 +137,9 @@ export const reposRouter = createTRPCRouter({
       return { success: true };
     }),
   listGitHubRepositories: protectedProcedure
+    .input(z.object({
+      previousLastId: z.string().optional(),
+    }))
     .query(async ({ ctx }) => {
       if(!ctx.session) {
         return [];
@@ -159,17 +168,24 @@ export const reposRouter = createTRPCRouter({
       }
       const decryptedToken = decrypt(encryptedToken, process.env.ENCRYPTION_KEY ?? "");
       const octokit = new Octokit({ auth: decryptedToken });
-      const { data } = await octokit.request("GET /user/repos");
-
+      const data = await octokit.paginate("GET /user/repos",
+        { 
+          per_page: 30,
+          sort: "updated",
+          direction: "desc", 
+        },  
+      ); 
+        
       const currentRepos = await ctx.db.gitHubRepo.findMany({
         where: { accountId: account.github_accounts?.[0]?.id },
       });
 
-      type RepoSynced = typeof data[0] & { synced: boolean };
+      type RepoSynced = typeof data[0] & { synced: boolean, url_path_id: string };
  
       const repos = data.map((repo) => { 
-        const synced = currentRepos.some((currentRepo) => currentRepo.githubId === repo.id.toString());
-        return { ...repo, synced };
+        const exist = currentRepos.find((currentRepo) => currentRepo.githubId === repo.id.toString());
+        const synced = exist ? true : false;
+        return { ...repo, synced, url_path_id: exist?.id ?? ""};
       }) as RepoSynced[];
       
       return repos;

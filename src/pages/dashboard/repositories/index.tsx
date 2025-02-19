@@ -5,7 +5,7 @@ import { api } from "~/utils/api";
 import type { inferRouterOutputs } from "@trpc/server";
 import type { AppRouter } from "~/server/api/root";
 import { DataTable } from "~/components/table"; 
-import { Loader2, Lock, Star, Unplug } from "lucide-react";
+import { Loader2, Lock, Star } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { useRouter } from "next/router";
  
