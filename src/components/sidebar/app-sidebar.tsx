@@ -7,6 +7,7 @@ import {
   BookOpen, 
   GithubIcon,
   GitPullRequest, 
+  HomeIcon, 
   Settings2, 
 } from "lucide-react";
 
@@ -27,6 +28,28 @@ import { useSession } from "next-auth/react";
 const data = { 
   navMain: [
     {
+      title: "Home",
+      url: "/dashboard",
+      icon: HomeIcon,
+      isActive: false, 
+    },
+    {
+      title: "Repositories",
+      url: "/dashboard/repositories",
+      icon: BookAIcon,
+      isActive: false,
+      items: [
+        {
+          title: "All Repositories",
+          url: "/dashboard/repositories",
+        },
+        {
+          title: "Starred",
+          url: "/dashboard/repositories?filter=starred",
+        }, 
+      ],
+    },
+    {
       title: "Pull Request",
       url: "/dashboard/pull-requests",
       icon: GitPullRequest,
@@ -43,22 +66,6 @@ const data = {
           title: "Starred",
           url: "/dashboard/pull-requests?filter=starred",
         },
-      ],
-    },
-    {
-      title: "Repositories",
-      url: "/dashboard/repositories",
-      icon: BookAIcon,
-      isActive: false,
-      items: [
-        {
-          title: "All Repositories",
-          url: "/dashboard/repositories",
-        },
-        {
-          title: "Starred",
-          url: "/dashboard/repositories?filter=starred",
-        }, 
       ],
     },
     {
