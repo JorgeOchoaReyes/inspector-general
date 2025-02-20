@@ -151,7 +151,7 @@ const NavLogo = () => {
     <Link href="/" className="flex items-center gap-2">
       <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
         <img
-          src="/inspector-general.webp"
+          src="/inspector-general.png"
           alt="" 
           className="rounded-md"
         />

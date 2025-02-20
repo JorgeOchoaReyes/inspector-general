@@ -5,8 +5,7 @@ import { Loader2 } from "lucide-react";
 import * as Diff2Html from "diff2html";
 import { type ColorSchemeType } from "diff2html/lib/types";
 import { FaPersonMilitaryRifle } from "react-icons/fa6";
-import React, { useEffect } from "react";  
-import { Button } from "~/components/ui/button";
+import React, { useEffect } from "react";   
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { AiButton } from "~/components/button/AiButton";
 
@@ -39,8 +38,13 @@ export default function Home(){
           role: message.sender,
           content: message.message
         };
-      }); 
-      setMessages(convertedMessages);
+      });
+      console.log(convertedMessages);
+      if(convertedMessages) { 
+        setMessages(convertedMessages);
+      } else {
+        setMessages(null);
+      }
     }
   }, [chatHistory.isSuccess, chatHistory.data]);
 
@@ -82,32 +86,35 @@ export default function Home(){
         <div className="h-[80vh] rounded-xl bg-muted/50 md:min-h-min min-w-[48%] sticky top-10 p-6 self-start">  
           <h2 className="text-2xl font-bold flex flex-row items-center gap-2">  <FaPersonMilitaryRifle />  Inspector General Chat </h2> 
           <div className="flex justify-center items-center w-full h-full"> 
-            {/* {
-              <AiButton 
-                onClick={async () => {
-                  const resu = await intializeInspectorReview.mutateAsync({ 
-                    repo: ((repo ?? "") as string), 
-                    pullRequestNumber: ((pullRequestId ?? "") as string) 
-                  });
-                  if(resu.success && resu.chatHistory) {
-                    const convertedMessages = resu.chatHistory.messages.map((message) => {
-                      return {
-                        role: message.sender,
-                        content: message.message
-                      };
-                    });
-                    setMessages(convertedMessages);
-                  }
-                }}   
-                _text="Analyze Pull Request"
-                icon={<MagnifyingGlassIcon className="text-xl" />}
-                loading={intializeInspectorReview.isPending}
-              />
-            }   */}
-            <Chat history={messages ?? [{
-              role: "inspector-general",
-              content: "Hello! I am the Inspector General. I will help you review this pull request."
-            }]} />
+            {
+              (chatHistory.isPending || intializeInspectorReview.isPending) ? <Loader2 className="animate-spin" /> : 
+                (!chatHistory.isPending && !messages) ?
+                  <AiButton 
+                    onClick={async () => {
+                      const resu = await intializeInspectorReview.mutateAsync({ 
+                        repo: ((repo ?? "") as string), 
+                        pullRequestNumber: ((pullRequestId ?? "") as string) 
+                      });
+                      if(resu.success && resu.chatHistory) {
+                        const convertedMessages = resu.chatHistory.messages.map((message) => {
+                          return {
+                            role: message.sender,
+                            content: message.message
+                          };
+                        });
+                        setMessages(convertedMessages);
+                      }
+                    }}   
+                    _text="Analyze Pull Request"
+                    icon={<MagnifyingGlassIcon className="text-xl" />}
+                    loading={intializeInspectorReview.isPending}
+                  /> : 
+                  <Chat history={messages ?? [{
+                    role: "inspector-general",
+                    content: "Hello! I am the Inspector General. I will help you review this pull request."
+                  }]} />
+            }  
+
           </div> 
         </div>
       </div>

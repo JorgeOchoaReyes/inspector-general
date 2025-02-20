@@ -14,6 +14,7 @@ import type {
   GitHubPullRequest,
   IGChatHistory,
   IGChatMessage,
+  InstructionsPullRequest
 } from "@prisma/client";
 
 type getPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"];
@@ -27,13 +28,13 @@ export const inspectorGeneralRouter = createTRPCRouter({
       pullRequestNumber: z.string(), 
     }))
     .mutation(async ({ ctx, input }) => { 
-      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
-
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? ""); 
       const userInfo = await getUserInfo(ctx);
       const { token } = userInfo;
       const { repo, pullRequestNumber } = input;
       const github = new Octokit({ auth: token }); 
       const owner = userInfo.account?.github_accounts[0]?.login ?? ""; 
+
       const repoDetails = await github.request(`GET /repos/${owner}/${repo}`, {
         owner: "OWNER",
         repo: "REPO",
@@ -41,12 +42,10 @@ export const inspectorGeneralRouter = createTRPCRouter({
           "X-GitHub-Api-Version": "2022-11-28"
         }
       }) as getRepoResponse; 
-      const repoId = repoDetails.data.id.toString();
-
+      const repoId = repoDetails.data.id.toString(); 
       const currentRepo = await ctx.db.gitHubRepo.findFirst({
         where: { githubId: repoId },
-      });
-      const githubStoredId = currentRepo?.id ?? "";
+      }); 
 
       const getPullRequest = await github.request(`GET /repos/${owner}/${repo}/pulls/${pullRequestNumber}`, {
         owner: "OWNER",
@@ -59,11 +58,8 @@ export const inspectorGeneralRouter = createTRPCRouter({
       if(!getPullRequest) {
         return { success: false };
       } 
-      const pullRequest = getPullRequest.data;
-      const title = pullRequest.title;
-      const body = pullRequest.body;
-      const diff = pullRequest.diff_url;
-      const getDiffContent = await fetch(diff);
+      const pullRequest = getPullRequest.data; 
+      const getDiffContent = await fetch(pullRequest.diff_url);
       const diffContent = await getDiffContent.text();
 
       const listPullRequestFiles = await github.request(`GET /repos/${owner}/${repo}/pulls/${pullRequestNumber}/files`, {
@@ -85,8 +81,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
         });
         const fileContent = getFileContent.data as {
           content: string;
-        };
-        
+        }; 
         const contentToString = Buffer.from(fileContent.content, "base64").toString("utf-8");
         return {
           filename: file.filename,
@@ -100,8 +95,8 @@ export const inspectorGeneralRouter = createTRPCRouter({
         Make sure you only focus on the code referenced in the diff.
         Be concise and focus on the most impactful suggestions only.
 
-        Pull Request Title: ${title}
-        Pull Request Description: ${body}
+        Pull Request Title: ${pullRequest.title}
+        Pull Request Description: ${pullRequest.body}
 
         ### START of Git diff of the PR
         ${diffContent}
@@ -109,8 +104,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
 
         For reference only: here's a snapshot of the files with the changes applied:
 
-        ### START File Contents after the changes ###
-
+        ### START File Contents after the changes ### 
         ${
   fileContents.map((file) => {
     return `
@@ -120,14 +114,13 @@ export const inspectorGeneralRouter = createTRPCRouter({
   }).join("\n")
 }
         ### END File Contents after the changes ###
-        `; 
+      `; 
       const model = genAI.getGenerativeModel({
         model: "gemini-1.5-flash",
         systemInstruction: instructions,
       });
 
-      const startChat = model.startChat();
-
+      const startChat = model.startChat();  
       const initialQuestion = startChat.sendMessage("Provide a code review for the pull request.");
       const resultOfReview = (await initialQuestion).response.text(); 
       
@@ -147,13 +140,13 @@ export const inspectorGeneralRouter = createTRPCRouter({
         review_comment_url: pullRequest.review_comment_url,
         comments_url: pullRequest.comments_url,
         statuses_url: pullRequest.statuses_url, 
-        githunRepoId: githubStoredId, 
-        ig_chat_id: ""
+        githunRepoId: currentRepo?.id ?? "", 
+        ig_chat_id: "",
       }; 
 
       const chatHistory: IGChatHistory = {
         id: uuid(),
-        chatName: `Code Review for ${title}`,  
+        chatName: `Code Review for ${pullRequest.title}`,  
         pullRequestUpdated: new Date(pullRequest.updated_at),
         githubPullRequestId: githubPullRequest.id,
       }; 
@@ -166,8 +159,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
         sender: "USER",
         timestamp: new Date(),
         chatId: chatHistory.id,
-      }; 
-
+      };  
       const secondMessage: IGChatMessage = {
         id: uuid(),
         message: resultOfReview,
@@ -176,18 +168,25 @@ export const inspectorGeneralRouter = createTRPCRouter({
         chatId: chatHistory.id,
       }; 
 
+      const instructionsPullRequiest: InstructionsPullRequest = {
+        id: uuid(),
+        githubPullRequestId: githubPullRequest.id,
+        instructions: [instructions],
+      }; 
+
       const db = ctx.db;
+
       await db.gitHubPullRequest.create({
         data: githubPullRequest,
       });
       await db.iGChatHistory.create({
         data: chatHistory,
       });
-      await db.iGChatMessage.create({
-        data: firstMessage,
-      }); 
-      await db.iGChatMessage.create({
-        data: secondMessage,
+      await db.iGChatMessage.createMany({
+        data: [firstMessage, secondMessage],
+      });  
+      await db.instructionsPullRequest.create({
+        data: instructionsPullRequiest,
       });
 
       return {
@@ -236,7 +235,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
         include: { ig_chat_history: true },
       });
 
-      if(!chatHistory || !chatHistory.ig_chat_history) {
+      if(!chatHistory || !chatHistory.ig_chat_history) { 
         return { success: false };
       }
       const igChatHistoryId = chatHistory.ig_chat_history.id;
@@ -253,11 +252,10 @@ export const inspectorGeneralRouter = createTRPCRouter({
   chatWithPullRequest: protectedProcedure
     .input(z.object({ 
       repo: z.string().min(1),
-      pullRequestNumber: z.string().min(1),
-      pulllRequestId: z.string().min(1),
+      pullRequestNumber: z.string().min(1), 
     }))
     .mutation(async ({ ctx, input }) => {
-      const { repo, pullRequestNumber, pulllRequestId } = input;
+      const { repo, pullRequestNumber } = input;
       
       
         
