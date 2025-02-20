@@ -41,17 +41,16 @@ export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
   const [isLoading, setIsLoading] = React.useState(false);
 
   return (
-    <div className="overflow-scroll h-full flex flex-col gap-4 p-4 pt-0">  
-      <ChatMessageList> 
-        {/* Messages */}
+    <div >  
+      <ChatMessageList className="overflow-y-auto md:h-[600px]">  
         {messages?.map((message, index) => (
           <ChatBubble
             key={index}
-            variant={message.role == "user" ? "sent" : "received"}
+            variant={message.role == "USER" ? "sent" : "received"}
           >
             <ChatBubbleAvatar
               src=""
-              fallback={message.role == "user" ? "👨🏽" : "🤖"}
+              fallback={message.role == "USER" ? "👨🏽" : "🤖"}
             />
             <ChatBubbleMessage>
               {message.content
@@ -70,8 +69,7 @@ export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
                       </pre>
                     );
                   }
-                })}
-
+                })} 
               {message.role === "assistant" &&
                     messages.length - 1 === index && (
                 <div className="flex items-center mt-1.5 gap-1">
@@ -98,7 +96,7 @@ export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
               )}
             </ChatBubbleMessage>
           </ChatBubble>
-        ))}
+        ))} 
 
         {/* Loading */}
         {isGenerating && (
