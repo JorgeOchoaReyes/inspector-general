@@ -41,7 +41,7 @@ export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
   const [isLoading, setIsLoading] = React.useState(false);
 
   return (
-    <div>  
+    <div className="overflow-scroll h-full flex flex-col gap-4 p-4 pt-0">  
       <ChatMessageList> 
         {/* Messages */}
         {messages?.map((message, index) => (

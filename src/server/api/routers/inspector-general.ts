@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { decrypt, encrypt } from "../../server_util";
 import { z } from "zod"; 
 import {
@@ -17,6 +18,7 @@ import type {
 
 type getPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"];
 type getPullRequestFilesResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}/files"]["response"]; 
+type getRepoResponse = Endpoints["GET /repos/{owner}/{repo}"]["response"];
 
 export const inspectorGeneralRouter = createTRPCRouter({ 
   initialAnalyzePullRequest: protectedProcedure
@@ -32,7 +34,20 @@ export const inspectorGeneralRouter = createTRPCRouter({
       const { repo, pullRequestNumber } = input;
       const github = new Octokit({ auth: token }); 
       const owner = userInfo.account?.github_accounts[0]?.login ?? ""; 
-      
+      const repoDetails = await github.request(`GET /repos/${owner}/${repo}`, {
+        owner: "OWNER",
+        repo: "REPO",
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      }) as getRepoResponse; 
+      const repoId = repoDetails.data.id.toString();
+
+      const currentRepo = await ctx.db.gitHubRepo.findFirst({
+        where: { githubId: repoId },
+      });
+      const githubStoredId = currentRepo?.id ?? "";
+
       const getPullRequest = await github.request(`GET /repos/${owner}/${repo}/pulls/${pullRequestNumber}`, {
         owner: "OWNER",
         repo: "REPO", 
@@ -132,16 +147,16 @@ export const inspectorGeneralRouter = createTRPCRouter({
         review_comment_url: pullRequest.review_comment_url,
         comments_url: pullRequest.comments_url,
         statuses_url: pullRequest.statuses_url, 
-        githunRepoId: pullRequest.base.repo.id.toString(), 
+        githunRepoId: githubStoredId, 
         ig_chat_id: ""
-      };
+      }; 
 
       const chatHistory: IGChatHistory = {
         id: uuid(),
         chatName: `Code Review for ${title}`,  
         pullRequestUpdated: new Date(pullRequest.updated_at),
-        githubPullRequestId: pullRequest.id.toString(),
-      };
+        githubPullRequestId: githubPullRequest.id,
+      }; 
 
       githubPullRequest.ig_chat_id = chatHistory.id;
       
@@ -159,7 +174,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
         sender: "ASSISTANT",
         timestamp: new Date(),
         chatId: chatHistory.id,
-      };
+      }; 
 
       const db = ctx.db;
       await db.gitHubPullRequest.create({
@@ -190,11 +205,51 @@ export const inspectorGeneralRouter = createTRPCRouter({
       const { repoId } = input;
       const user = await getUserInfo(ctx);
       const { token } = user;
-      const github = new Octokit({ auth: token });
-
-        
+      const github = new Octokit({ auth: token }); 
     
     }),  
+
+  getChatHistory: protectedProcedure
+    .input(z.object({
+      repo: z.string(),
+      pullRequestNumber: z.string(), 
+    }))
+    .query(async ({ ctx, input }) => {
+      const userInfo = await getUserInfo(ctx);
+      const { token } = userInfo;
+      const { repo, pullRequestNumber } = input;
+      const github = new Octokit({ auth: token }); 
+      const owner = userInfo.account?.github_accounts[0]?.login ?? "";
+
+      const getPullRequest = await github.request(`GET /repos/${owner}/${repo}/pulls/${pullRequestNumber}`, {
+        owner: "OWNER",
+        repo: "REPO",
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      }) as getPullRequestResponse;
+      
+      const id = getPullRequest.data.id.toString();
+
+      const chatHistory = await ctx.db.gitHubPullRequest.findFirst({
+        where: { githubId: id },
+        include: { ig_chat_history: true },
+      });
+
+      if(!chatHistory || !chatHistory.ig_chat_history) {
+        return { success: false };
+      }
+      const igChatHistoryId = chatHistory.ig_chat_history.id;
+      const messages = await ctx.db.iGChatMessage.findMany({
+        where: { chatId: igChatHistoryId },
+      });
+
+      return {
+        success: true,
+        messages,
+      }; 
+ 
+    }),
   chatWithPullRequest: protectedProcedure
     .input(z.object({ 
       repo: z.string().min(1),
@@ -203,6 +258,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
     }))
     .mutation(async ({ ctx, input }) => {
       const { repo, pullRequestNumber, pulllRequestId } = input;
+      
       
         
     
