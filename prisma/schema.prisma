@@ -1,16 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+ 
 generator client {
     provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+    provider = "postgresql" 
     url      = env("DATABASE_URL")
 }
  
@@ -94,10 +88,31 @@ model GitHubPullRequest {
  
     githunRepoId           String
     githubRepo             GitHubRepo @relation(fields: [githunRepoId], references: [id], onDelete: Cascade)
+ 
+    ig_chat_id             String   
+    ig_chat_history        IGChatHistory?
 
     
 }
 
+model IGChatHistory {
+    id                     String @id @default(cuid())  
+    chatName               String  
+    chatMessages           IGChatMessage[] 
+    pullRequestUpdated     DateTime // Use this to track when the pull request was last updated and re initiate the chat if it is too old 
+    
+    githubPullRequestId    String @unique
+    githubPullRequest      GitHubPullRequest @relation(fields: [githubPullRequestId], references: [id])
+}
+
+model IGChatMessage {
+    id                     String @id @default(cuid())
+    message                String
+    sender                 String
+    timestamp              DateTime
+    chatId                 String
+    chat                   IGChatHistory @relation(fields: [chatId], references: [id], onDelete: Cascade)
+}
 
 model Session {
     id           String   @id @default(cuid())
