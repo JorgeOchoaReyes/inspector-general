@@ -1,8 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { 
-  BookA,
+import {  
   BookAIcon,
   BookOpen, 
   GithubIcon,

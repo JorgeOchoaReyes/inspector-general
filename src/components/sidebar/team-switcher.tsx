@@ -1,21 +1,10 @@
 "use client";
 
-import * as React from "react";
-import { ChevronsUpDown, Plus } from "lucide-react"; 
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
+import * as React from "react"; 
 import {
   SidebarMenu,
   SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
+  SidebarMenuItem, 
 } from "~/components/ui/sidebar";
 import { useRouter } from "next/router";
 
