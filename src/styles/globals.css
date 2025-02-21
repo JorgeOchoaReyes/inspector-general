@@ -80,8 +80,7 @@
     @apply bg-background text-foreground;
   }
 }
-
-
+ 
 .d2h-wrapper {
   text-align: left;
   transform: translateZ(0);

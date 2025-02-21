@@ -8,12 +8,8 @@ import { FaPersonMilitaryRifle } from "react-icons/fa6";
 import React, { useEffect } from "react";   
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { AiButton } from "~/components/button/AiButton";
-
-import type { inferRouterOutputs } from "@trpc/server";
-import type { AppRouter } from "~/server/api/root";
 import { Chat } from "~/components/chat";
 
-type RouterOutput = inferRouterOutputs<AppRouter>; 
 
 export default function Home(){    
   const router = useRouter(); 
@@ -25,11 +21,12 @@ export default function Home(){
     pullRequestNumber: parseFloat((pullRequestId ?? "0") as string) 
   });   
   const intializeInspectorReview = api.inspectorGeneralRouter.initialAnalyzePullRequest.useMutation();
-  const chatHistory = api.inspectorGeneralRouter.getChatHistory.useQuery({
+  const chatHistory = api.inspectorGeneralRouter.getPullRequestChatHistory.useQuery({
     repo: repo as string,
     pullRequestNumber: ((pullRequestId as string) ?? "")
   }, 
   );
+  const chatWithBot = api.inspectorGeneralRouter.chatWithPullRequest.useMutation();
 
   useEffect(() => {
     if(chatHistory.isSuccess && chatHistory?.data?.messages) {
@@ -39,7 +36,6 @@ export default function Home(){
           content: message.message
         };
       });
-      console.log(convertedMessages);
       if(convertedMessages) { 
         setMessages(convertedMessages);
       } else {
@@ -47,16 +43,18 @@ export default function Home(){
       }
     }
   }, [chatHistory.isSuccess, chatHistory.data]);
+ 
+  const heightMinsAndMaxLg = "xl:h-[825px] xl:max-h-[825px] xl:min-h-[825px]";
 
   return (
     <DashboardLayout title="Pull Request"> 
-      <div className="flex flex-row gap-4 p-4 pt-0 h-full">  
+      <div className={`flex flex-row gap-4 pt-0 justify-around ml-2 ${heightMinsAndMaxLg}`}>  
         {
           getPullRequestt.isPending ? <div className="flex justify-center items-center w-full h-full"> <Loader2 className="animate-spin" /> </div> :
             (!getPullRequestt.isSuccess || !getPullRequestt.data.success) ? <div> Error! Could not fetch details. </div> :
               getPullRequestt.isSuccess && getPullRequestt.data.success &&
               <>
-                <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min p-6 max-w-[50%]"> 
+                <div className={"flex flex-col rounded-xl bg-muted/50 p-4 w-[40vw] max-w-[40vw]"}> 
                   <div className="flex flex-row justify-between items-center"> 
                     <h1 className="text-3xl font-bold">
                       <a className="underline text-blue-600" target="_blank" rel="noopener noreferrer" href={getPullRequestt.data.success.html_url}>{getPullRequestt.data.success.title} #{getPullRequestt.data.success.number} </a>
@@ -83,39 +81,41 @@ export default function Home(){
                 </div>
               </>
         } 
-        <div className="h-[80vh] rounded-xl bg-muted/50 md:min-h-min min-w-[48%] sticky top-10 p-6 self-start">  
+        <div className={"flex flex-col rounded-xl bg-muted/50 items-center w-[40vw] min-w-[40vw] max-w-[40vw] p-4"}>   
           <h2 className="text-2xl font-bold flex flex-row items-center gap-2">  <FaPersonMilitaryRifle />  Inspector General Chat </h2> 
-          <div className="flex justify-center items-center w-full h-full"> 
+          <div className={"flex w-[40vw] min-w-[40vw] max-w-[40vw]" + ( (!chatHistory.isPending && !messages) || (chatHistory.isPending || intializeInspectorReview.isPending)) ? "justify-center" : ""}>
             {
-              (chatHistory.isPending || intializeInspectorReview.isPending) ? <Loader2 className="animate-spin" /> : 
-                (!chatHistory.isPending && !messages) ?
-                  <AiButton 
-                    onClick={async () => {
-                      const resu = await intializeInspectorReview.mutateAsync({ 
-                        repo: ((repo ?? "") as string), 
-                        pullRequestNumber: ((pullRequestId ?? "") as string) 
-                      });
-                      if(resu.success && resu.chatHistory) {
-                        const convertedMessages = resu.chatHistory.messages.map((message) => {
-                          return {
-                            role: message.sender,
-                            content: message.message
-                          };
+              (chatHistory.isPending || intializeInspectorReview.isPending) ?              
+                <div className="mt-80"> <Loader2 className="animate-spin" /></div> : 
+                (!chatHistory.isPending && !messages) ? 
+                  <div className="mt-80">
+                    <AiButton 
+                      onClick={async () => {
+                        const resu = await intializeInspectorReview.mutateAsync({ 
+                          repo: ((repo ?? "") as string), 
+                          pullRequestNumber: ((pullRequestId ?? "") as string) 
                         });
-                        setMessages(convertedMessages);
-                      }
-                    }}   
-                    _text="Analyze Pull Request"
-                    icon={<MagnifyingGlassIcon className="text-xl" />}
-                    loading={intializeInspectorReview.isPending}
-                  /> : 
+                        if(resu.success && resu.chatHistory) {
+                          const convertedMessages = resu.chatHistory.messages.map((message) => {
+                            return {
+                              role: message.sender,
+                              content: message.message
+                            };
+                          });
+                          setMessages(convertedMessages);
+                        }
+                      }}   
+                      _text="Analyze Pull Request"
+                      icon={<MagnifyingGlassIcon className="text-xl" />}
+                      loading={intializeInspectorReview.isPending}
+                    />
+                  </div> : 
                   <Chat history={messages ?? [{
                     role: "inspector-general",
                     content: "Hello! I am the Inspector General. I will help you review this pull request."
                   }]} />
-            }  
-
-          </div> 
+            }   
+          </div>
         </div>
       </div>
     </DashboardLayout>
