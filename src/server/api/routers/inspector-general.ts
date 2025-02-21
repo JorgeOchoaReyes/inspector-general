@@ -75,18 +75,25 @@ export const inspectorGeneralRouter = createTRPCRouter({
       files = files.filter((file) => !file.filename.includes("package-lock.json"));
 
       const fileContents = await Promise.all(files.map(async (file) => { 
-        const getFileContent = await github.request(`GET /repos/${owner}/${repo}/contents/${file.filename}`, {
-          owner: "OWNER",
-          repo: "REPO",
-        });
-        const fileContent = getFileContent.data as {
-          content: string;
-        }; 
-        const contentToString = Buffer.from(fileContent.content, "base64").toString("utf-8");
-        return {
-          filename: file.filename,
-          content: contentToString
-        };
+        try {
+          const getFileContent = await github.request(`GET /repos/${owner}/${repo}/contents/${file.filename}`, {
+            owner: "OWNER",
+            repo: "REPO",
+          });
+          const fileContent = getFileContent.data as {
+            content: string;
+          }; 
+          const contentToString = Buffer.from(fileContent.content, "base64").toString("utf-8");
+          return {
+            filename: file.filename,
+            content: contentToString
+          };
+        } catch (error) {
+          return {
+            filename: file.filename,
+            content: "Unable to retrieve file content."
+          };
+        } 
       })); 
        
       const instructions =  `
@@ -94,6 +101,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
         helpful suggestions for the following pull request.
         Make sure you only focus on the code referenced in the diff.
         Be concise and focus on the most impactful suggestions only.
+        Provide code examples where necessary.
 
         Pull Request Title: ${pullRequest.title}
         Pull Request Description: ${pullRequest.body}
@@ -206,9 +214,8 @@ export const inspectorGeneralRouter = createTRPCRouter({
       const { token } = user;
       const github = new Octokit({ auth: token }); 
     
-    }),  
-
-  getChatHistory: protectedProcedure
+    }),   
+  getPullRequestChatHistory: protectedProcedure
     .input(z.object({
       repo: z.string(),
       pullRequestNumber: z.string(), 
@@ -253,9 +260,10 @@ export const inspectorGeneralRouter = createTRPCRouter({
     .input(z.object({ 
       repo: z.string().min(1),
       pullRequestNumber: z.string().min(1), 
+      chatHistoryId: z.array(z.any()),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { repo, pullRequestNumber } = input;
+      const { repo, pullRequestNumber, chatHistoryId } = input;
       
       
         

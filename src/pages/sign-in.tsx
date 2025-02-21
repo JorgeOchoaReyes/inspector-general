@@ -149,7 +149,7 @@ const CornerGrid = () => {
 const NavLogo = () => {
   return (
     <Link href="/" className="flex items-center gap-2">
-      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+      <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-white text-sidebar-primary-foreground">
         <img
           src="/inspector-general.png"
           alt="" 

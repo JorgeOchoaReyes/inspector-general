@@ -52,7 +52,7 @@ export const DashboardLayout: React.FC<{
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-      </header>
+      </header>  
       {children}
     </SidebarInset>
   </SidebarProvider>;
