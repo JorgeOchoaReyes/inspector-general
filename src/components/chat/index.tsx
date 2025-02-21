@@ -42,7 +42,7 @@ export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
 
   return (
     <div className="flex flex-col mt-10 w-[38vw] min-w-[38vw] max-w-[38vw]" >  
-      <ChatMessageList className="overflow-y-auto h-[600px]">  
+      <ChatMessageList className="overflow-y-auto h-[590px]">  
         {messages?.map((message, index) => (
           <ChatBubble
             key={index}
