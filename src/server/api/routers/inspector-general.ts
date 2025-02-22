@@ -16,6 +16,7 @@ import type {
   IGChatMessage,
   InstructionsPullRequest
 } from "@prisma/client";
+import { timeStamp } from "console";
 
 type getPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"];
 type getPullRequestFilesResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}/files"]["response"]; 
@@ -206,15 +207,6 @@ export const inspectorGeneralRouter = createTRPCRouter({
       };
 
     }),  
-  initialAnalyzeRepo: protectedProcedure
-    .input(z.object({ repoId: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      const { repoId } = input;
-      const user = await getUserInfo(ctx);
-      const { token } = user;
-      const github = new Octokit({ auth: token }); 
-    
-    }),   
   getPullRequestChatHistory: protectedProcedure
     .input(z.object({
       repo: z.string(),
@@ -240,7 +232,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
       const chatHistory = await ctx.db.gitHubPullRequest.findFirst({
         where: { githubId: id },
         include: { ig_chat_history: true },
-      });
+      }); 
 
       if(!chatHistory || !chatHistory.ig_chat_history) { 
         return { success: false };
@@ -252,23 +244,126 @@ export const inspectorGeneralRouter = createTRPCRouter({
 
       return {
         success: true,
-        messages,
+        messages: messages.sort((m, n) => new Date(m.timestamp).getTime() - new Date(n.timestamp).getTime()),
       }; 
  
     }),
   chatWithPullRequest: protectedProcedure
     .input(z.object({ 
       repo: z.string().min(1),
-      pullRequestNumber: z.string().min(1), 
-      chatHistoryId: z.array(z.any()),
+      pullRequestNumber: z.string().min(1),  
+      message: z.object({
+        role: z.string().min(1),
+        content: z.string().min(1),
+      })
     }))
     .mutation(async ({ ctx, input }) => {
-      const { repo, pullRequestNumber, chatHistoryId } = input;
+      const { repo, pullRequestNumber, message } = input;
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? ""); 
+      const userInfo = await getUserInfo(ctx);
+      const { token } = userInfo; 
+      const db = ctx.db;
+      const github = new Octokit({ auth: token }); 
+      const owner = userInfo.account?.github_accounts[0]?.login ?? "";
+
+      const getPullRequest = await github.request(`GET /repos/${owner}/${repo}/pulls/${pullRequestNumber}`, {
+        owner: "OWNER",
+        repo: "REPO",
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      }) as getPullRequestResponse;
+
+      const id = getPullRequest.data.id.toString();
+
+      const chatHistory = await ctx.db.gitHubPullRequest.findFirst({
+        where: { githubId: id },
+        include: { ig_chat_history: true, instructions_pull_request: true },
+      });
+
+      const initialInstructions = chatHistory?.instructions_pull_request?.instructions[0] ?? "";
       
+      const getMessages = await ctx.db.iGChatMessage.findMany({
+        where: { chatId: chatHistory?.ig_chat_history?.id ?? "" },
+      });
       
-        
+      const messages = getMessages.sort((m, n) => new Date(m.timestamp).getTime() - new Date(n.timestamp).getTime()).map((message) => {
+        const convertRoles = message.sender === "USER" ? "user" : "model";
+        return {
+          role: convertRoles,
+          parts: [{ text: message.message }],
+        };
+      });
+
+      const model = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        systemInstruction: initialInstructions,
+      });
+ 
+      const startChat = model.startChat({
+        history: messages,
+      });
+
+      const response = await startChat.sendMessage(message.content);
+
+      const offsetDateByOne = new Date();
+      const newDate = new Date(offsetDateByOne.setSeconds(offsetDateByOne.getSeconds() + 1));
+
+      const newMessageResponse: IGChatMessage = {
+        id: uuid(),
+        message: response.response.text(),
+        sender: "ASSISTANT",
+        timestamp: newDate,
+        chatId: chatHistory?.ig_chat_history?.id ?? "",
+      };
+
+      const newMessageUser: IGChatMessage = {
+        id: uuid(),
+        message: message.content,
+        sender: message.role,
+        timestamp: new Date(),
+        chatId: chatHistory?.ig_chat_history?.id ?? "",
+      };
+
+      await db.iGChatMessage.createMany({
+        data: [newMessageResponse, newMessageUser],
+      });
+
+      const newMessages = [
+        ...messages,
+        {
+          role: newMessageUser.sender,
+          parts: [{ text: newMessageUser.message }],
+        }, 
+        {
+          role: newMessageResponse.sender,
+          parts: [{ text: newMessageResponse.message }],
+        },
+      ];
+      const convertToChatHistory = newMessages.map((message) => {
+        const revertRoles = message.role.toLowerCase() === "user" ? "USER" : "ASSISTANT";
+        return {
+          role: revertRoles,
+          content: message?.parts?.[0]?.text ?? "",
+        };
+      });
+  
+      return {
+        success: true,
+        chatHistory: convertToChatHistory
+      }; 
     
     }),
+    
+  initialAnalyzeRepo: protectedProcedure
+    .input(z.object({ repoId: z.string().min(1) }))
+    .mutation(async ({ ctx, input }) => {
+      const { repoId } = input;
+      const user = await getUserInfo(ctx);
+      const { token } = user;
+      const github = new Octokit({ auth: token }); 
+  
+    }),   
   chatWithRepo: protectedProcedure
     .input(z.object({ 
       repoId: z.string().min(1),
@@ -276,20 +371,5 @@ export const inspectorGeneralRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const { repoId } = input;
     
-    }),
-  retrievePullRequestAnalysis: protectedProcedure
-    .input(z.object({ token: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      const { token } = input;
-       
-    
-    }),
-  retrieveRepoAnalysis: protectedProcedure
-    .input(z.object({ token: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {
-      const { token } = input;
-      
-        
-    
-    }),
+    }), 
 });
