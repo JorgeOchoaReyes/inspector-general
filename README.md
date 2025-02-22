@@ -12,12 +12,9 @@ We provide quick and easy pull request reviews, along with the ability to chat a
  ![example](https://github.com/user-attachments/assets/c90677ae-7120-40c6-b2a4-15ca82e6f7ad)
 
  
-## Authors
+## Authors 
 
-Contributors names and contact info
-
-ex. Jorge Raul Ochoa Reyes 
-ex. [@JorgeOchoaReyes](https://github.com/JorgeOchoaReyes)
+Jorge Raul Ochoa Reyes [@JorgeOchoaReyes](https://github.com/JorgeOchoaReyes)
 
 ## Version History
 * 0.1
