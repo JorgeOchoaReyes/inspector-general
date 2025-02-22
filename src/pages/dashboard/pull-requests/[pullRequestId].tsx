@@ -18,7 +18,7 @@ export default function Home(){
 
   const getPullRequestt = api.pullRequest.getPullRequest.useQuery({
     repo: repo as string,
-    pullRequestNumber: parseFloat((pullRequestId ?? "0") as string) 
+    pullRequestNumber: parseFloat((pullRequestId ?? "0") as string) ?? 0
   });   
   const intializeInspectorReview = api.inspectorGeneralRouter.initialAnalyzePullRequest.useMutation();
   const chatHistory = api.inspectorGeneralRouter.getPullRequestChatHistory.useQuery({
@@ -28,6 +28,18 @@ export default function Home(){
   );
   const chatWithBot = api.inspectorGeneralRouter.chatWithPullRequest.useMutation();
 
+  const handleSendMessage = async (newMessage: {role: string, content: string}) => { 
+    setMessages([...(messages ?? []), newMessage]);
+    const res = await chatWithBot.mutateAsync({
+      repo: ((repo ?? "") as string), 
+      pullRequestNumber: ((pullRequestId ?? "") as string),
+      message: newMessage
+    });
+    if(res.success && res.chatHistory) { 
+      setMessages(res.chatHistory);
+    }
+  };
+
   useEffect(() => {
     if(chatHistory.isSuccess && chatHistory?.data?.messages) {
       const convertedMessages = chatHistory.data.messages.map((message) => {
@@ -36,7 +48,9 @@ export default function Home(){
           content: message.message
         };
       });
+       
       if(convertedMessages) { 
+        console.log(convertedMessages);
         setMessages(convertedMessages);
       } else {
         setMessages(null);
@@ -113,7 +127,13 @@ export default function Home(){
                   <Chat history={messages ?? [{
                     role: "inspector-general",
                     content: "Hello! I am the Inspector General. I will help you review this pull request."
-                  }]} />
+                  }]}
+                  loading={chatHistory.isPending}
+                  isGenerating={
+                    intializeInspectorReview.isPending || chatWithBot.isPending
+                  }
+                  handleSendMessage={handleSendMessage}
+                  />
             }   
           </div>
         </div>

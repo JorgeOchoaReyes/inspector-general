@@ -10,8 +10,7 @@ import {
   CornerDownLeft,
   Mic,
   Paperclip,
-  RefreshCcw,
-  Send,
+  RefreshCcw, 
   Volume2,
 } from "lucide-react";
 import { ChatMessageList } from "~/components/ui/chat/chat-message-list";
@@ -31,19 +30,31 @@ const ChatAiIcons = [
   },
 ]; 
 
-export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
+export const Chat: React.FC<{
+  history: {role: string, content: string}[],
+  loading: boolean,
+  isGenerating: boolean, 
+  handleSendMessage: (newMessage: {
+    role: string, 
+    content: string
+  }) => Promise<void>
+}> = ({
   history,
-}) => { 
-  const [messages, setMessages] = React.useState<{role: string, content: string}[]>(history ?? []);
-  const [isGenerating, setIsGenerating] = React.useState(false);
+  loading,
+  isGenerating, 
+  handleSendMessage
+}) => {  
+  const formRef = React.useRef<HTMLFormElement>(null); 
   const [input, setInput] = React.useState("");
-  const formRef = React.useRef<HTMLFormElement>(null);
-  const [isLoading, setIsLoading] = React.useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInput(e.target.value);
+  };
 
   return (
     <div className="flex flex-col mt-10 w-[38vw] min-w-[38vw] max-w-[38vw]" >  
-      <ChatMessageList className="overflow-y-auto h-[590px]">  
-        {messages?.map((message, index) => (
+      <ChatMessageList className="overflow-y-auto h-[585px]">  
+        {history?.map((message, index) => (
           <ChatBubble
             key={index}
             variant={message.role == "USER" ? "sent" : "received"}
@@ -71,7 +82,7 @@ export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
                   }
                 })} 
               {message.role === "assistant" &&
-                    messages.length - 1 === index && (
+                    history.length - 1 === index && (
                 <div className="flex items-center mt-1.5 gap-1">
                   {!isGenerating && (
                     <>
@@ -106,15 +117,14 @@ export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
           </ChatBubble>
         )}
       </ChatMessageList> 
-      <form
-        ref={formRef}
-        // onSubmit={onSubmit}
+      <div 
         className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"
       >
         <ChatInput
-          value={input}
-          // onKeyDown={onKeyDown}
-          // onChange={handleInputChange}
+          value={input} 
+          onChange={(e) => {
+            handleInputChange(e);
+          }}
           placeholder="Type your message here..."
           className="rounded-lg bg-background border-0 shadow-none focus-visible:ring-0"
         />
@@ -128,7 +138,18 @@ export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
             <span className="sr-only">Use Microphone</span>
           </Button> 
           <Button
-            disabled={!input || isLoading}
+            disabled={!input || loading}
+            onClick={async () => {
+              setInput("");
+              try {
+                await handleSendMessage({
+                  role: "USER",
+                  content: input
+                }); 
+              } catch (error) { 
+                console.error(error); 
+              } 
+            }}
             type="submit"
             size="sm"
             className="ml-auto gap-1.5"
@@ -137,7 +158,7 @@ export const Chat: React.FC<{history: {role: string, content: string}[]}> = ({
             <CornerDownLeft className="size-3.5" />
           </Button>
         </div>
-      </form>
+      </div>
     </div>
   );
 };
