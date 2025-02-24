@@ -87,8 +87,8 @@ model GitHubPullRequest {
     comments_url                String
     statuses_url                String
         
-    githunRepoId                String
-    githubRepo                  GitHubRepo @relation(fields: [githunRepoId], references: [id], onDelete: Cascade)
+    githubRepoId                String
+    githubRepo                  GitHubRepo @relation(fields: [githubRepoId], references: [id], onDelete: Cascade)
         
     ig_chat_id                  String   
     ig_chat_history             IGChatHistory? 
