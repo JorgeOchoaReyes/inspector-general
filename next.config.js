@@ -17,10 +17,7 @@ const config = {
     locales: ["en"],
     defaultLocale: "en",
   },
-  transpilePackages: ["geist", ],
-  api: { 
-    timeout: 60 * 1000, 
-  },
+  transpilePackages: ["geist"]
 };
 
 export default config;
