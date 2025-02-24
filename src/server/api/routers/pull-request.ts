@@ -7,6 +7,7 @@ import {
 import { v4 as uuid } from "uuid";
 import { Octokit } from "@octokit/core";  
 import type { Endpoints } from "@octokit/types";
+import { list } from "postcss";
  
 type listUserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"];
 type UserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"];
@@ -54,7 +55,69 @@ export const pullRequestRouter = createTRPCRouter({
         console.error(error);
         return { success: [] };
       }
-    }),  
+    }), 
+  listSyncedPullRequest: protectedProcedure
+    .input(z.object({ 
+      cursor: z.string().optional()
+    }))
+    .query(async ({ ctx, input }) => { 
+      if(!ctx.session) {
+        return { success: [] };
+      }
+      try { 
+        const db = ctx.db;
+       
+        const userInfo = await getUserInfo(ctx);
+        if(!userInfo) {
+          return { success: [] };
+        }
+        
+        const getGithubAccount = userInfo.account?.github_accounts[0];
+        if(!getGithubAccount) {
+          return { success: [] };
+        }
+
+        const getRepos = await db.gitHubRepo.findMany({
+          where: {
+            accountId: getGithubAccount.id
+          },
+        }); 
+
+        if(getRepos.length === 0) {
+          return { success: [] };
+        }
+
+        const findPullRequest = await Promise.all(getRepos.map(async (repo) => {
+          const githubRepoId = repo.id;
+          const pullRequsts = await db.gitHubPullRequest.findMany({
+            where: {
+              githunRepoId: githubRepoId
+            }
+          });
+          const addTitleOfRepo = pullRequsts.map((pr) => {
+            return {
+              ...pr,
+              repoName: repo.name
+            };
+          }); 
+          return addTitleOfRepo;
+        }));
+
+        if(findPullRequest.length === 0) {
+          return { success: [] };
+        }
+
+        const listPrs = findPullRequest;
+        
+        const flattenList = listPrs.flat();
+
+        return { success: flattenList };
+ 
+      } catch (error) {
+        console.error(error);
+        return { success: [] };
+      }
+    }),
   getPullRequest: protectedProcedure
     .input(z.object({ 
       repo: z.string(),
