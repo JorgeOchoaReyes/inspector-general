@@ -124,15 +124,16 @@ export default function Home(){
                       loading={intializeInspectorReview.isPending}
                     />
                   </div> : 
-                  <Chat history={messages ?? [{
-                    role: "inspector-general",
-                    content: "Hello! I am the Inspector General. I will help you review this pull request."
-                  }]}
-                  loading={chatHistory.isPending}
-                  isGenerating={
-                    intializeInspectorReview.isPending || chatWithBot.isPending
-                  }
-                  handleSendMessage={handleSendMessage}
+                  <Chat 
+                    history={messages ?? [{
+                      role: "inspector-general",
+                      content: "Hello! I am the Inspector General. I will help you review this pull request."
+                    }]}
+                    loading={chatHistory.isPending}
+                    isGenerating={
+                      intializeInspectorReview.isPending || chatWithBot.isPending
+                    }
+                    handleSendMessage={handleSendMessage}
                   />
             }   
           </div>

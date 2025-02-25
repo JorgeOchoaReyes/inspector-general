@@ -43,8 +43,7 @@ export const Chat: React.FC<{
   loading,
   isGenerating, 
   handleSendMessage
-}) => {  
-  const formRef = React.useRef<HTMLFormElement>(null); 
+}) => {   
   const [input, setInput] = React.useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -53,7 +52,7 @@ export const Chat: React.FC<{
 
   return (
     <div className="flex flex-col mt-10 w-[38vw] min-w-[38vw] max-w-[38vw]" >  
-      <ChatMessageList className="overflow-y-auto h-[585px]">  
+      <ChatMessageList className="overflow-y-auto h-[65vh]">  
         {history?.map((message, index) => (
           <ChatBubble
             key={index}

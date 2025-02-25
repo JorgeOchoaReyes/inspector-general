@@ -57,14 +57,26 @@ export default function Repos() {
                             <div className="flex flex-row items-center gap-2 font-bold"> 
                               <Star size={18} />
                               <a  
-                                href={`/dashboard/pull-requests/${cell.row.original.title}?repo=${cell.row.original.repoName}`}  
+                                href={`/dashboard/pull-requests/${cell.row.original.number}?repo=${cell.row.original.repoName}`}  
                               >{cell.getValue() as string}</a>  
+                            </div>
+                          );
+                        }
+                      }, 
+                      {
+                        accessorKey: "state",
+                        header: "State",
+                        cell: (cell) => {  
+                          const bgColor = cell.getValue() === "open" ? "bg-orange-500" : "bg-purple-500";
+                          return (
+                            <div className={`flex justify-center flex-row items-center ${bgColor} rounded-md content-center p-1`}> 
+                              {cell.getValue() as string}
                             </div>
                           );
                         }
                       },   
                       {
-                        accessorKey: "title",
+                        accessorKey: "_",
                         header: "Repo Path",
                         cell: (cell) => {  
                           return (
