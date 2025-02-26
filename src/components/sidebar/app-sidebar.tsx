@@ -142,7 +142,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: userData } = useSession();
 
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" {...props} >
       <SidebarHeader>
         <TeamSwitcher  />
       </SidebarHeader>
@@ -150,10 +150,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={nav} />  
       </SidebarContent>
       <SidebarFooter>
-        <div className="flex items-center justify-between"> 
-          <div className="text-sm text-muted-foreground">Theme</div> 
-          <ModeToggle />
-        </div>
         <NavUser user={
           data ? {
             name: userData?.user.name ?? "",
