@@ -37,12 +37,16 @@ export const Chat: React.FC<{
   handleSendMessage: (newMessage: {
     role: string, 
     content: string
-  }) => Promise<void>
+  }) => Promise<void>,
+  widthClassNames?: string,
+  heightClassNames?: string
 }> = ({
   history,
   loading,
   isGenerating, 
-  handleSendMessage
+  handleSendMessage,
+  widthClassNames = "w-[38vw] min-w-[38vw] max-w-[38vw]",
+  heightClassNames = ""
 }) => {   
   const [input, setInput] = React.useState("");
 
@@ -51,8 +55,10 @@ export const Chat: React.FC<{
   };
 
   return (
-    <div className="flex flex-col mt-10 w-[38vw] min-w-[38vw] max-w-[38vw]" >  
-      <ChatMessageList className="overflow-y-auto h-[65vh]">  
+    <div className={"flex flex-col mt-10" + widthClassNames + heightClassNames} >  
+      <ChatMessageList 
+        style={{height: "65vh"}}
+        className={"overflow-y-auto" }>  
         {history?.map((message, index) => (
           <ChatBubble
             key={index}
@@ -117,7 +123,7 @@ export const Chat: React.FC<{
         )}
       </ChatMessageList> 
       <div 
-        className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring"
+        className="relative rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring mt-auto"
       >
         <ChatInput
           value={input} 
