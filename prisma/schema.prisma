@@ -68,6 +68,8 @@ model GitHubRepo {
 
     pullRequests            GitHubPullRequest[]  
 
+    pinecone_namespaces     String?
+
 }
 
 model GitHubPullRequest {

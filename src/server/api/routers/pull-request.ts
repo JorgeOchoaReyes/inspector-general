@@ -10,8 +10,7 @@ import type { Endpoints } from "@octokit/types";
 import { list } from "postcss";
  
 type listUserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"];
-type UserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"];
-type GetRepo = Endpoints["GET /repos/{owner}/{repo}"]["response"];
+type UserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]; 
 
 export const pullRequestRouter = createTRPCRouter({ 
   listPullRequest: protectedProcedure
