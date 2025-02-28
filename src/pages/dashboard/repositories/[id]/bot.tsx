@@ -5,16 +5,20 @@ import { useRouter } from "next/router";
 import { Loader2, } from "lucide-react"; 
 import React from "react";    
 import { Chat } from "~/components/chat";
+import { AiButton } from "~/components/button/AiButton";
+import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 
 export default function Home(){   
   const router = useRouter(); 
-  const pathId = router.query.id as string;
-  const repoDetails = api.repos.getOneRepoDetails.useQuery({ id: pathId }); 
+  const repoId = router.query.id as string;
+  const repoDetails = api.repos.getOneRepoDetails.useQuery({ id: repoId }); 
   const [messages, setMessages] = React.useState<{role: string, content: string}[] | null>(null);
   
   const handleSendMessage = async (newMessage: {role: string, content: string}) => {
     setMessages([...(messages ?? []), newMessage]);
   };
+
+  const analyzeRepo = api.inspectorGeneralRouter.initialAnalyzeRepo.useMutation(); 
 
   return (
     <DashboardLayout title={"Repo Details"}>  
@@ -33,19 +37,38 @@ export default function Home(){
                   </div>
                   : 
                   <FadeInSlide> 
-                    <Chat
-                      history={messages ?? [
-                        {
-                          role: "inspector-general",
-                          content: "Hello! I am the Inspector General. I will help you review this pull request."
-                        }, 
-                      ]}
-                      loading={false}
-                      isGenerating={false}
-                      handleSendMessage={handleSendMessage}
-                      widthClassNames="w-[70vw] min-w-[70vw] max-w-[70vw]"
-                      heightClassNames="h-[80vh] min-h-[80vh] max-h-[80vh]"
-                    />
+                    {
+                      !messages ? 
+                        <div className="flex flex-col gap-4 rounded-xl p-4 items-center justify-center min-h-[70vh]"> 
+                          <h2 className="text-xl font-semibold text-white mb-10"> 
+                            Begin chatting with Inspector General 
+                          </h2>
+                          <div> 
+                            <AiButton 
+                              onClick={async () => {
+                                await analyzeRepo.mutateAsync({ repoId: repoId ?? "" });
+                              }} 
+                              icon={<MagnifyingGlassIcon />} 
+                              loading={analyzeRepo.isPending}
+                              _text="Analyze Repo"
+                            /> 
+                          </div>
+                        </div>
+                        :
+                        <Chat
+                          history={messages ?? [
+                            {
+                              role: "inspector-general",
+                              content: "Hello! I am the Inspector General. I will help you review this pull request."
+                            }, 
+                          ]}
+                          loading={false}
+                          isGenerating={false}
+                          handleSendMessage={handleSendMessage}
+                          widthClassNames="w-[70vw] min-w-[70vw] max-w-[70vw]"
+                          heightClassNames="h-[80vh] min-h-[80vh] max-h-[80vh]"
+                        />
+                    }
                   </FadeInSlide>
               }
             </div>    

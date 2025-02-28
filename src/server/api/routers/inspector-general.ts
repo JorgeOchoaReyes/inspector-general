@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { decrypt, encrypt } from "../../server_util";
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */ 
 import { z } from "zod"; 
 import {
   createTRPCRouter,
@@ -21,6 +20,8 @@ import { Pinecone } from "@pinecone-database/pinecone";
 type getPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"];
 type getPullRequestFilesResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}/files"]["response"]; 
 type getRepoResponse = Endpoints["GET /repos/{owner}/{repo}"]["response"];
+type getBranchResponse = Endpoints["GET /repos/{owner}/{repo}/branches/{branch}"]["response"];
+type getTreeResponse = Endpoints["GET /repos/{owner}/{repo}/git/trees/{tree_sha}"]["response"];
 
 export const inspectorGeneralRouter = createTRPCRouter({ 
   initialAnalyzePullRequest: protectedProcedure
@@ -354,7 +355,6 @@ export const inspectorGeneralRouter = createTRPCRouter({
       }; 
     
     }),
-    
   initialAnalyzeRepo: protectedProcedure
     .input(z.object({ repoId: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
@@ -378,8 +378,38 @@ export const inspectorGeneralRouter = createTRPCRouter({
           "X-GitHub-Api-Version": "2022-11-28"
         }
       }) as getRepoResponse;
+      const mainBranch = repoDetails.data.default_branch;
 
-      const retrieveFiles = [];
+      const branchDetails = await github.request(`GET /repos/${owner}/${repo}/branches/${mainBranch}`, {
+        owner: "OWNER",
+        repo: "REPO",
+        branch: "BRANCH",
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      }) as getBranchResponse;
+
+      const treeSha = branchDetails.data.commit.commit.tree.sha;
+      const treeDetails = await github.request(`GET /repos/${owner}/${repo}/git/trees/${treeSha}`, {
+        owner: "OWNER",
+        repo: "REPO",
+        tree_sha: "TREE_SHA",
+        // recursive: "true",
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      });
+
+      const treeData = treeDetails.data as getTreeResponse["data"];
+
+      const tree = treeData.tree;
+      
+      const namespaceForPineCone = `${owner}/${repo}`;
+      
+
+
+      console.log("Namespace for Pinecone: ", namespaceForPineCone);
+      console.log("Files: ", JSON.stringify(tree));
       
       
     }),   
