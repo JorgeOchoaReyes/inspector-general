@@ -27,6 +27,7 @@
     "@octokit/core": "^6.1.4",
     "@octokit/plugin-paginate-rest": "^11.4.2",
     "@octokit/rest": "^21.1.0",
+    "@pinecone-database/pinecone": "^5.0.2",
     "@prisma/client": "^5.14.0",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-collapsible": "^1.1.2",

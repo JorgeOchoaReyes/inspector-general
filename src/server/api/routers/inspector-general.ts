@@ -16,7 +16,7 @@ import type {
   IGChatMessage,
   InstructionsPullRequest
 } from "@prisma/client";
-import { timeStamp } from "console";
+import { Pinecone } from "@pinecone-database/pinecone";
 
 type getPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"];
 type getPullRequestFilesResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}/files"]["response"]; 
@@ -362,7 +362,26 @@ export const inspectorGeneralRouter = createTRPCRouter({
       const user = await getUserInfo(ctx);
       const { token } = user;
       const github = new Octokit({ auth: token }); 
-  
+      const pc = new Pinecone({
+        apiKey: process.env.PINECONE_API_KEY ?? "",
+      });
+      const owner = user.account?.github_accounts[0]?.login ?? "";
+      const repoFromDb = await ctx.db.gitHubRepo.findFirst({
+        where: { id: repoId },  
+      });
+      if(!repoFromDb) {
+        return { success: false };
+      }
+      const repo = repoFromDb.name;
+      const repoDetails = await github.request(`GET /repos/${owner}/${repo}`, {
+        headers: {
+          "X-GitHub-Api-Version": "2022-11-28"
+        }
+      }) as getRepoResponse;
+
+      const retrieveFiles = [];
+      
+      
     }),   
   chatWithRepo: protectedProcedure
     .input(z.object({ 
