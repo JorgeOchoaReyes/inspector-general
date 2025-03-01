@@ -1,7 +1,9 @@
 import crypto from "crypto"; 
 import { type Context } from "./api/trpc";
+import { type Endpoints } from "@octokit/types";
+import { Octokit } from "@octokit/core";  
 
-const githubApiUrl = "https://api.github.com";
+type getTreeResponse = Endpoints["GET /repos/{owner}/{repo}/git/trees/{tree_sha}"]["response"];
 
 export const encrypt = (text: string, key: string) => {
   const iv = crypto.randomBytes(16); 
