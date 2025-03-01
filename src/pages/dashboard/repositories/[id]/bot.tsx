@@ -38,7 +38,7 @@ export default function Home(){
                   : 
                   <FadeInSlide> 
                     {
-                      !messages ? 
+                      !repoDetails.data?.analyzed ? 
                         <div className="flex flex-col gap-4 rounded-xl p-4 items-center justify-center min-h-[70vh]"> 
                           <h2 className="text-xl font-semibold text-white mb-10"> 
                             Begin chatting with Inspector General 

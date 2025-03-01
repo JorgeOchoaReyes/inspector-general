@@ -365,53 +365,117 @@ export const inspectorGeneralRouter = createTRPCRouter({
       const pc = new Pinecone({
         apiKey: process.env.PINECONE_API_KEY ?? "",
       });
-      const owner = user.account?.github_accounts[0]?.login ?? "";
-      const repoFromDb = await ctx.db.gitHubRepo.findFirst({
-        where: { id: repoId },  
-      });
-      if(!repoFromDb) {
+      const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? ""); 
+
+      try {
+        
+        const owner = user.account?.github_accounts[0]?.login ?? "";
+        const repoFromDb = await ctx.db.gitHubRepo.findFirst({
+          where: { id: repoId },  
+        });
+        if(!repoFromDb) {
+          return { success: false };
+        }
+        const repo = repoFromDb.name;
+        const repoDetails = await github.request(`GET /repos/${owner}/${repo}`, {
+          owner: "OWNER",
+          repo: "REPO",
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28"
+          }
+        }) as getRepoResponse;
+        const mainBranch = repoDetails.data.default_branch;
+
+        const branchDetails = await github.request(`GET /repos/${owner}/${repo}/branches/${mainBranch}`, {
+          owner: "OWNER",
+          repo: "REPO",
+          branch: "BRANCH",
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28"
+          }
+        }) as getBranchResponse;
+
+        const treeSha = branchDetails.data.commit.commit.tree.sha;
+        const treeDetails = await github.request(`GET /repos/${owner}/${repo}/git/trees/${treeSha}`, {
+          owner: "OWNER",
+          repo: "REPO",
+          tree_sha: "TREE_SHA",
+          recursive: "true",
+          headers: {
+            "X-GitHub-Api-Version": "2022-11-28"
+          }
+        });
+
+        const treeData = treeDetails.data as getTreeResponse["data"];
+
+        const tree = treeData.tree;
+       
+        const namespaceForPineCone = (`${owner}-${repo}`)
+          .replace(/_/g, "-")
+          .replace(/\./g, "-")
+          .toLowerCase(); 
+
+        const files = await Promise.all(tree.map(async (file) => {
+          try {
+            const getFileContent = await github.request(`GET /repos/${owner}/${repo}/contents/${file.path}`, {
+              owner: "OWNER",
+              repo: "REPO",
+            });
+            const fileContent = getFileContent.data as {
+            content: string;
+          }; 
+            const contentToString = Buffer.from(fileContent.content, "base64").toString("utf-8");
+            return {
+              id: file.path,
+              text: contentToString,
+              category: file.path
+            };
+          } catch (error) {
+            return {
+              id: file.path,
+              text: "Unable to retrieve file content.",
+              category: file.path
+            };
+          } 
+        }));
+
+        const embedding = genAI.getGenerativeModel({ model: "text-embedding-004"}); 
+
+        const transformFiles = files.map((file) => {
+          return { content: { role: "user", parts: [{ text: file.text }] } };
+        });
+
+        const embedResults = await embedding.batchEmbedContents({
+          requests: transformFiles,
+        });
+        const embeddings = embedResults.embeddings;
+
+        const records = files.map((record, i) => {
+          return {
+            id: record.id ?? "",
+            values: embeddings?.[i]?.values ?? [0],
+            metadata: { text: record.id ?? "" },
+          };
+        });
+
+        const index = pc.index(`code-review-${namespaceForPineCone}`); 
+
+        await index.namespace(namespaceForPineCone).upsert(records);
+
+        const db = ctx.db;
+
+        console.log(`Code review index created for ${namespaceForPineCone}`, repoId);
+
+        await db.gitHubRepo.update({
+          where: { id: repoId },
+          data: { pinecone_index: `code-review-${namespaceForPineCone}`, pinecone_namespaces: namespaceForPineCone, analyzed: true },
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.log((error as {message: string}));
         return { success: false };
-      }
-      const repo = repoFromDb.name;
-      const repoDetails = await github.request(`GET /repos/${owner}/${repo}`, {
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28"
-        }
-      }) as getRepoResponse;
-      const mainBranch = repoDetails.data.default_branch;
-
-      const branchDetails = await github.request(`GET /repos/${owner}/${repo}/branches/${mainBranch}`, {
-        owner: "OWNER",
-        repo: "REPO",
-        branch: "BRANCH",
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28"
-        }
-      }) as getBranchResponse;
-
-      const treeSha = branchDetails.data.commit.commit.tree.sha;
-      const treeDetails = await github.request(`GET /repos/${owner}/${repo}/git/trees/${treeSha}`, {
-        owner: "OWNER",
-        repo: "REPO",
-        tree_sha: "TREE_SHA",
-        // recursive: "true",
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28"
-        }
-      });
-
-      const treeData = treeDetails.data as getTreeResponse["data"];
-
-      const tree = treeData.tree;
-      
-      const namespaceForPineCone = `${owner}/${repo}`;
-      
-
-
-      console.log("Namespace for Pinecone: ", namespaceForPineCone);
-      console.log("Files: ", JSON.stringify(tree));
-      
-      
+      } 
     }),   
   chatWithRepo: protectedProcedure
     .input(z.object({ 
