@@ -1,3 +1,4 @@
+import { api } from "~/utils/api";
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */ 
 import { z } from "zod"; 
 import {
@@ -13,15 +14,26 @@ import type {
   GitHubPullRequest,
   IGChatHistory,
   IGChatMessage,
-  InstructionsPullRequest
+  InstructionsPullRequest,
+  IGChatHistoryRepo,
+  IGChatMessageRepo,  
 } from "@prisma/client";
-import { Pinecone } from "@pinecone-database/pinecone";
+import { Pinecone } from "@pinecone-database/pinecone"; 
+import { PineconeStore } from "@langchain/pinecone";
+import { GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import { Annotation } from "@langchain/langgraph"; 
+import { StateGraph } from "@langchain/langgraph";
+import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { pull } from "langchain/hub";
+import { type ChatPromptTemplate } from "@langchain/core/prompts";
+import { type Document } from "@langchain/core/documents";
 
 type getPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"];
 type getPullRequestFilesResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}/files"]["response"]; 
 type getRepoResponse = Endpoints["GET /repos/{owner}/{repo}"]["response"];
 type getBranchResponse = Endpoints["GET /repos/{owner}/{repo}/branches/{branch}"]["response"];
 type getTreeResponse = Endpoints["GET /repos/{owner}/{repo}/git/trees/{tree_sha}"]["response"];
+type getFileContent = Endpoints["GET /repos/{owner}/{repo}/contents/{path}"]["response"];
 
 export const inspectorGeneralRouter = createTRPCRouter({ 
   initialAnalyzePullRequest: protectedProcedure
@@ -367,8 +379,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
       });
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? ""); 
 
-      try {
-        
+      try { 
         const owner = user.account?.github_accounts[0]?.login ?? "";
         const repoFromDb = await ctx.db.gitHubRepo.findFirst({
           where: { id: repoId },  
@@ -420,11 +431,17 @@ export const inspectorGeneralRouter = createTRPCRouter({
             const getFileContent = await github.request(`GET /repos/${owner}/${repo}/contents/${file.path}`, {
               owner: "OWNER",
               repo: "REPO",
-            });
+            }) as getFileContent;
             const fileContent = getFileContent.data as {
-            content: string;
-          }; 
-            const contentToString = Buffer.from(fileContent.content, "base64").toString("utf-8");
+              content: string; 
+            };
+            
+            const fileType = getFileContent.headers["content-type"] ?? "";
+            // skip images/audio/video files
+            if(fileType === "application/octet-stream" || fileType.includes("image") || fileType.includes("audio") || fileType.includes("video")) {
+              return null; 
+            }
+            const contentToString = Buffer.from((fileContent?.content), "base64").toString("utf-8");
             return {
               id: file.path,
               text: contentToString,
@@ -437,9 +454,10 @@ export const inspectorGeneralRouter = createTRPCRouter({
               category: file.path
             };
           } 
-        }));
+        }).filter((file) => file !== null) 
+        ) as { id: string; text: string; category: string }[]; 
 
-        const embedding = genAI.getGenerativeModel({ model: "text-embedding-004"}); 
+        const embedding = genAI.getGenerativeModel({ model: "text-embedding-004", }); 
 
         const transformFiles = files.map((file) => {
           return { content: { role: "user", parts: [{ text: file.text }] } };
@@ -454,13 +472,30 @@ export const inspectorGeneralRouter = createTRPCRouter({
           return {
             id: record.id ?? "",
             values: embeddings?.[i]?.values ?? [0],
-            metadata: { text: record.id ?? "" },
+            metadata: { text: record.text },
           };
-        });
+        }); 
+        
+        try{
+          await pc.createIndex({
+            name: `code-review-${namespaceForPineCone}`,
+            dimension: 768,
+            metric: "cosine",  
+            spec: { 
+              serverless: { 
+                cloud: "aws", 
+                region: "us-east-1" 
+              }
+            }, 
+            waitUntilReady: true, 
+          });   
 
-        const index = pc.index(`code-review-${namespaceForPineCone}`); 
-
-        await index.namespace(namespaceForPineCone).upsert(records);
+          const index = pc.index(`code-review-${namespaceForPineCone}`);  
+          await index.namespace(namespaceForPineCone).upsert(records);
+        } catch (error) {
+          console.log("[Error]: ", (error as {message: string}));
+          return { success: false };
+        }
 
         const db = ctx.db;
 
@@ -469,7 +504,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
         await db.gitHubRepo.update({
           where: { id: repoId },
           data: { pinecone_index: `code-review-${namespaceForPineCone}`, pinecone_namespaces: namespaceForPineCone, analyzed: true },
-        });
+        }); 
 
         return { success: true };
       } catch (error) {
@@ -477,12 +512,181 @@ export const inspectorGeneralRouter = createTRPCRouter({
         return { success: false };
       } 
     }),   
+  getRepoChatHistory: protectedProcedure
+    .input(z.object({ repoId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { repoId } = input;
+      if(!repoId) {
+        return { success: false };
+      }
+      const db = ctx.db;
+      const chatHistory = await db.iGChatHistoryRepo.findFirst({
+        where: { githubRepoId: repoId },
+      });
+
+      if(!chatHistory) {
+        return { success: false };
+      }
+
+      const messages = await db.iGChatMessageRepo.findMany({
+        where: { chatId: chatHistory.id },
+      });
+
+      return {
+        success: true,
+        messages: messages.sort((m, n) => new Date(m.timestamp).getTime() - new Date(n.timestamp).getTime()),
+      };
+    }),
   chatWithRepo: protectedProcedure
     .input(z.object({ 
       repoId: z.string().min(1),
+      message: z.object({
+        role: z.string().min(1),
+        content: z.string().min(1),
+      })
     }))
     .mutation(async ({ ctx, input }) => {
-      const { repoId } = input;
-    
+      const { repoId } = input; 
+      const db = ctx.db; 
+      const pc = new Pinecone({
+        apiKey: process.env.PINECONE_API_KEY ?? "",
+      });
+
+      const retreiveRepo = await db.gitHubRepo.findFirstOrThrow({
+        where: { id: repoId },
+      });
+
+      const namespace = retreiveRepo.pinecone_namespaces;
+      const index = retreiveRepo.pinecone_index ?? "";
+
+      if(!namespace || !index) {
+        return { success: false, message: "Repo has not been analyzed." };
+      }
+
+      const model = new ChatGoogleGenerativeAI({
+        model: "gemini-1.5-flash", 
+        apiKey: process.env.GEMINI_API_KEY ?? "",
+      });
+      const embeddingModel = new GoogleGenerativeAIEmbeddings({
+        apiKey: process.env.GEMINI_API_KEY ?? "",
+      });
+
+      const existingIndex = pc.index(index);
+      const vectorStore = await PineconeStore.fromExistingIndex(embeddingModel, {
+        pineconeIndex: existingIndex,
+        namespace: namespace,
+      });  
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const InputStateAnnotation = Annotation.Root({
+        question: Annotation<string>,
+      });
+      
+      const StateAnnotation = Annotation.Root({
+        question: Annotation<string>,
+        context: Annotation<Document[]>,
+        answer: Annotation<string>,
+      }); 
+
+      const promptTemplate = await pull<ChatPromptTemplate>("rlm/rag-prompt");   
+
+      const retrieve = async (state: typeof InputStateAnnotation.State) => {
+        const retrievedDocs = await vectorStore.similaritySearch(state.question);
+        return { context: retrievedDocs };
+      };
+
+      const testRetrieve = await retrieve({
+        question: "Provide feedback for the src/index.ts file",
+      });
+
+      console.log(testRetrieve);
+      
+      const generate = async (state: typeof StateAnnotation.State) => {
+        const docsContent = state.context.map((doc) => doc.pageContent).join("\n");
+        const messages = await promptTemplate.invoke({
+          question: state.question,
+          context: docsContent,
+        });
+        const response = await model.invoke(messages);
+        return { answer: response.content };
+      };
+
+      const graph = new StateGraph(StateAnnotation)
+        .addNode("retrieve", retrieve)
+        .addNode("generate", generate)
+        .addEdge("__start__", "retrieve")
+        .addEdge("retrieve", "generate")
+        .addEdge("generate", "__end__")
+        .compile();
+
+      let retriveExisingChat = await db.iGChatHistoryRepo.findFirst({
+        where: { githubRepoId: repoId },
+        include: { chatMessages: true },
+      }); 
+      if(!retriveExisingChat) {
+        const newChat: IGChatHistoryRepo = {
+          id: uuid(),
+          chatName: "Chat with Inspector General",   
+          repoUpdated: new Date(),
+          githubRepoId: repoId, 
+        }; 
+        await db.iGChatHistoryRepo.create({
+          data: newChat,
+        });
+        retriveExisingChat = {
+          ...newChat,
+          chatMessages: [],
+        };
+      }  
+      // const config3 = { configurable: { thread_id: uuid() } };
+
+      // await graph.updateState(config3, {
+      //   messages: retriveExisingChat.chatMessages.map((message) => {
+      //     return {
+      //       role: message.sender.toLowerCase(),
+      //       content: message.message,
+      //     };
+      //   }),
+      // }); 
+
+      const inputs = { question: input.message.content }; 
+      const result = await graph.invoke(inputs); 
+
+      const newMessageUser: IGChatMessageRepo = {
+        id: uuid(),
+        message: input.message.content,
+        sender: input.message.role,
+        timestamp: new Date(),
+        chatId: retriveExisingChat.id,
+      };   
+      const shiftedDate = new Date();
+      const newDate = new Date(shiftedDate.setSeconds(shiftedDate.getSeconds() + 1)); 
+      const newMessageResponse: IGChatMessageRepo = {
+        id: uuid(),
+        message: result.answer,
+        sender: "ASSISTANT",
+        timestamp: newDate,
+        chatId: retriveExisingChat.id,
+      };
+
+      await db.iGChatMessageRepo.createMany({
+        data: [newMessageUser, newMessageResponse],
+      });
+
+      const fullUpdatedChatHistory = [retriveExisingChat.chatMessages, newMessageUser, newMessageResponse]
+        .flat()
+        .sort((m, n) => new Date(m.timestamp).getTime() - new Date(n.timestamp).getTime())
+        .map((message) => {
+          return {
+            role: message.sender,
+            content: message.message,
+          };
+        });
+
+      return {
+        success: true,
+        chatHistory: fullUpdatedChatHistory
+      };
+
     }), 
 });

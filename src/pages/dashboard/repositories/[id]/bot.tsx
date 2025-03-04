@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { Loader2, } from "lucide-react"; 
 import React from "react";    
 import { Chat } from "~/components/chat";
+import { useEffect } from "react";
 import { AiButton } from "~/components/button/AiButton";
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 
@@ -13,12 +14,40 @@ export default function Home(){
   const repoId = router.query.id as string;
   const repoDetails = api.repos.getOneRepoDetails.useQuery({ id: repoId }); 
   const [messages, setMessages] = React.useState<{role: string, content: string}[] | null>(null);
-  
-  const handleSendMessage = async (newMessage: {role: string, content: string}) => {
-    setMessages([...(messages ?? []), newMessage]);
-  };
 
   const analyzeRepo = api.inspectorGeneralRouter.initialAnalyzeRepo.useMutation(); 
+  const chatWithRepoMutation = api.inspectorGeneralRouter.chatWithRepo.useMutation();
+  const chatHistory = api.inspectorGeneralRouter.getRepoChatHistory.useQuery({ repoId: repoId ?? "" }); 
+  
+  useEffect(() => {
+    if(chatHistory.isSuccess && chatHistory?.data?.messages) {
+      const convertedMessages = chatHistory.data.messages.map((message) => {
+        return {
+          role: message.sender,
+          content: message.message
+        };
+      });
+       
+      if(convertedMessages) { 
+        console.log(convertedMessages);
+        setMessages(convertedMessages);
+      } else {
+        setMessages(null);
+      }
+    }
+  }, [chatHistory.isSuccess, chatHistory.data]);
+
+  const handleSendMessage = async (newMessage: {role: string, content: string}) => { 
+    const res = await chatWithRepoMutation.mutateAsync({
+      repoId: repoId ?? "", 
+      message: newMessage
+    });
+    if(res.success && res.chatHistory) { 
+      setMessages(res.chatHistory);
+    } else {
+      alert("There was an error sending the message");
+    }
+  }; 
 
   return (
     <DashboardLayout title={"Repo Details"}>  
@@ -62,8 +91,8 @@ export default function Home(){
                               content: "Hello! I am the Inspector General. I will help you review this pull request."
                             }, 
                           ]}
-                          loading={false}
-                          isGenerating={false}
+                          loading={chatWithRepoMutation.isPending}
+                          isGenerating={chatWithRepoMutation.isPending}
                           handleSendMessage={handleSendMessage}
                           widthClassNames="w-[70vw] min-w-[70vw] max-w-[70vw]"
                           heightClassNames="h-[80vh] min-h-[80vh] max-h-[80vh]"
