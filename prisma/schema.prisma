@@ -67,31 +67,10 @@ model GitHubRepo {
     starred                 Boolean  @default(false)
 
     pullRequests            GitHubPullRequest[]  
-
-    pinecone_namespaces     String?
-    pinecone_index          String?
-    analyzed                Boolean @default(false)
-    ig_chat_history_repo    IGChatHistoryRepo?
+ 
 
 } 
-
-model IGChatHistoryRepo {
-    id                     String @id @default(cuid())  
-    chatName               String  
-    chatMessages           IGChatMessageRepo[] 
-    repoUpdated            DateTime // Use this to track when the pull request was last updated and re initiate the chat if it is too old  
-    githubRepoId           String @unique
-    githubRepo             GitHubRepo @relation(fields: [githubRepoId], references: [id])
-}
-
-model IGChatMessageRepo {
-    id                     String @id @default(cuid())
-    message                String
-    sender                 String
-    timestamp              DateTime
-    chatId                 String
-    chat                   IGChatHistoryRepo @relation(fields: [chatId], references: [id], onDelete: Cascade)
-}
+ 
 
 model GitHubPullRequest {
     id                          String @id @default(cuid())
