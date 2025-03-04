@@ -7,7 +7,7 @@ Auto review and chat with PRs and Repos.
 
 ## Description
 
-We provide quick and easy pull request reviews, along with the ability to chat and gain file by file review and suggestions, along with allowing you to chat with a whole repo and be provided potentially missed issues. 
+We provide quick and easy pull request reviews, along with the ability to chat and gain file by file review and suggestions, and scan entire repo to provide potentially missed issues. 
 
  ![example](https://github.com/user-attachments/assets/c90677ae-7120-40c6-b2a4-15ca82e6f7ad)
 
