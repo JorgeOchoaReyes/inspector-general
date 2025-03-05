@@ -123,9 +123,7 @@ export const pullRequestRouter = createTRPCRouter({
       pullRequestNumber: z.number()
     }))
     .query(async ({ ctx, input }) => {
-      const { repo, pullRequestNumber } = input;
-      
-      
+      const { repo, pullRequestNumber } = input; 
       if(!repo || repo === "" || typeof pullRequestNumber !== "number") {
         return { success: null };
       }
