@@ -1,7 +1,7 @@
 import { motion, useInView } from "framer-motion";
 import { type Dispatch, type SetStateAction, useEffect, useRef, useState } from "react";
 import { type IconType } from "react-icons";
-import { FiDollarSign, FiEye, FiPlay, FiSearch } from "react-icons/fi";
+import { FiEye, FiPlay, FiSearch } from "react-icons/fi";
 
 export const Features = () => {
   return (

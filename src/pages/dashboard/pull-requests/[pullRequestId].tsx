@@ -8,8 +8,7 @@ import { FaPersonMilitaryRifle } from "react-icons/fa6";
 import React, { useEffect } from "react";   
 import { MagnifyingGlassIcon } from "@radix-ui/react-icons";
 import { AiButton } from "~/components/button/AiButton";
-import { Chat } from "~/components/chat";
-
+import { Chat } from "~/components/chat"; 
 
 export default function Home(){    
   const router = useRouter(); 

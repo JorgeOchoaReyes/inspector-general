@@ -9,9 +9,10 @@ import { useTheme } from "next-themes";
 interface ButtonCodeblockProps {
   code: string;
   lang: string;
+  _theme?: string;
 }
 
-export default function CodeDisplayBlock({ code, lang }: ButtonCodeblockProps) {
+export default function CodeDisplayBlock({ code, lang, _theme }: ButtonCodeblockProps) {
   const [isCopied, setisCopied] = React.useState(false);
   const { theme } = useTheme();
 
@@ -25,7 +26,7 @@ export default function CodeDisplayBlock({ code, lang }: ButtonCodeblockProps) {
   };
 
   return (
-    <div className="relative flex flex-col   text-start  ">
+    <div className="relative flex flex-col text-start  ">
       <Button
         onClick={copyToClipboard}
         variant="ghost"
@@ -39,15 +40,11 @@ export default function CodeDisplayBlock({ code, lang }: ButtonCodeblockProps) {
         )}
       </Button>
       <CodeBlock
-        customStyle={
-          theme === "dark"
-            ? { background: "#303033" }
-            : { background: "#fcfcfc" }
-        }
+        customStyle={  { background: "#303033" } }
         text={code}
         language="tsx"
         showLineNumbers={false}
-        theme={theme === "dark" ? dracula : github}
+        theme={ dracula }
       />
     </div>
   );
