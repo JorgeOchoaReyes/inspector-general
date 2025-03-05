@@ -74,9 +74,10 @@ const Content = ({
   setFeatureInView: Dispatch<SetStateAction<FeatureType>>;
   featureInView: FeatureType;
 }) => {
+
   const ref = useRef(null);
   const isInView = useInView(ref, {
-    margin: "-150px",
+    margin: "-250px",
   });
 
   useEffect(() => {
@@ -160,36 +161,32 @@ const features: FeatureType[] = [
     id: 1,
     callout: "Automate your workflow",
     title: "Pull Requests Auto-Reviewed",
-    description:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt suscipit fugiat distinctio officia earum eius quae officiis quis harum animi.",
+    description: "Get instant PR code reviews on Github to help develoeprs ship fast!",
     contentPosition: "r",
     Icon: FiEye,
   },
   {
     id: 2,
-    callout: "Catch Missed Mistakes",
-    title: "Catch Previously Missed Bugs & Vulnerabilities",
-    description:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt suscipit fugiat distinctio officia earum eius quae officiis quis harum animi.",
+    callout: "Zone in on feedback",
+    title: "Chat with Inspector General",
+    description: "Ask inspector general for more details feedback on your code, or narrow in to file specific feedback.",
     contentPosition: "l",
     Icon: FiSearch,
   },
   {
     id: 3,
     callout: "Help Developers",
-    title: "Suggested Changes",
-    description:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt suscipit fugiat distinctio officia earum eius quae officiis quis harum animi.",
+    title: "Line by line PR feedback",
+    description: "We don't just tell a long list of issues, we provide feedback line by line to help developers find the issues and fix them quickly.",
     contentPosition: "r",
     Icon: FiPlay,
   },
-  {
-    id: 4,
-    callout: "10x Your Team",
-    title: "Make your developers happy",
-    description:
-      "Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolor iusto quaerat qui, illo incidunt suscipit fugiat distinctio officia earum eius quae officiis quis harum animi.",
-    contentPosition: "l",
-    Icon: FiDollarSign,
-  },
+  // {
+  //   id: 4,
+  //   callout: "10x Your Team",
+  //   title: "Scan for existing issues",
+  //   description: "Inspector General is always on the lookout for issues that may have been missed. It's like having a second pair of eyes on your code.",
+  //   contentPosition: "l",
+  //   Icon: FiDollarSign,
+  // },
 ];
