@@ -96,3 +96,25 @@
   -webkit-mask-clip: content-box, border-box;
   -webkit-mask-composite: xor;
 }
+
+@layer utilities {
+  .scrollbar::-webkit-scrollbar {
+    width: 20px;
+    height: 20px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    border-radius: 100vh;
+    background: #8b8494;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background: black;
+    border-radius: 100vh;
+    border: 3px solid #655e6e;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #655e6e;
+  }
+}

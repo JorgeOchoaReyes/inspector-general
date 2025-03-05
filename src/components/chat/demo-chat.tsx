@@ -1,15 +1,10 @@
 import React from "react"; 
 import Markdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import CodeDisplayBlock from "~/components/code-block";
-import { Button } from "~/components/ui/button";
-import { ChatInput } from "~/components/ui/chat/chat-input";
+import CodeDisplayBlock from "~/components/code-block"; 
 import { ChatBubble, ChatBubbleAvatar, ChatBubbleMessage, ChatBubbleAction } from "~/components/ui/chat/chat-bubble";
 import {
-  CopyIcon,
-  CornerDownLeft,
-  Mic,
-  Paperclip,
+  CopyIcon, 
   RefreshCcw, 
   Volume2,
 } from "lucide-react";
@@ -33,13 +28,9 @@ const ChatAiIcons = [
 export const DemoChat: React.FC<{
   history: {role: string, content: string}[],
   loading: boolean,
-  isGenerating: boolean, 
-  handleSendMessage: (newMessage: {
-    role: string, 
-    content: string
-  }) => Promise<void>,
+  isGenerating: boolean,  
   widthClassNames?: string,
-  heightClassNames?: string
+  heightClassNames?: string,
 }> = ({
   history, 
   isGenerating,  
@@ -50,18 +41,17 @@ export const DemoChat: React.FC<{
   return (
     <div className={"flex flex-col mt-10" + widthClassNames + heightClassNames} >  
       <ChatMessageList 
-        style={{height: "65vh"}}
-        className={"overflow-y-auto" }>  
+        style={{height: "70vh"}}
+        className={"overflow-y-auto scrollbar" }>  
         {history?.map((message, index) => (
           <ChatBubble
             key={index}
+            className=""
             variant={message.role == "USER" ? "sent" : "received"}
-          >
-            <ChatBubbleAvatar
-              src=""
-              fallback={message.role == "USER" ? "👨🏽" : "🤖"}
-            />
-            <ChatBubbleMessage>
+          > 
+            <ChatBubbleMessage style={{
+              backgroundColor: "#171717 !important",
+            }} className="w-[]">
               {message.content
                 .split("```")
                 .map((part: string, index: number) => {
@@ -74,7 +64,7 @@ export const DemoChat: React.FC<{
                   } else {
                     return (
                       <pre className="whitespace-pre-wrap pt-2" key={index}>
-                        <CodeDisplayBlock code={part} lang="" />
+                        <CodeDisplayBlock code={part} lang="js" _theme="dark" />
                       </pre>
                     );
                   }
@@ -91,11 +81,7 @@ export const DemoChat: React.FC<{
                             variant="outline"
                             className="size-5"
                             key={iconIndex}
-                            icon={<Icon className="size-3" />}
-                            onClick={() =>
-                            // handleActionClick(icon.label, index)
-                              alert("Action Clicked")
-                            }
+                            icon={<Icon className="size-3" />} 
                           />
                         );
                       })}
