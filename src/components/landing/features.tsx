@@ -74,16 +74,10 @@ const Content = ({
   setFeatureInView: Dispatch<SetStateAction<FeatureType>>;
   featureInView: FeatureType;
 }) => {
-  const windowWidth = window.innerWidth;
-  const marginForLaptop = "150px";
-  const marginForMobile = "50px";
-  const marginForDesktop = "250px";
-
-  const marginForAnimation = windowWidth > 1024 ? marginForDesktop : windowWidth > 768 ? marginForLaptop : marginForMobile; 
 
   const ref = useRef(null);
   const isInView = useInView(ref, {
-    margin: `-${marginForAnimation}`,
+    margin: "-250px",
   });
 
   useEffect(() => {
