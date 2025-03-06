@@ -334,4 +334,33 @@ export const reposRouter = createTRPCRouter({
 
       return currentRepo;
     }),
+  userHasGitHubToken: protectedProcedure
+    .query(async ({ ctx }) => {
+      if(!ctx.session) {
+        return { hasToken: false };
+      }
+      const account = await ctx.db.account.findFirstOrThrow({
+        where: { userId: ctx.session.user.id },
+        select: { 
+          github_accounts: true,
+          id: true,
+        },
+      });
+      if(!account) {
+        return { hasToken: false };
+      }
+      const githubAccounts = account.github_accounts;
+      if(githubAccounts.length === 0) {
+        return { hasToken: false };
+      }
+      const githubAccount = githubAccounts[0];
+      if(!githubAccount) {
+        return { hasToken: false };
+      }  
+      const encryptedToken = githubAccount.github_token;
+      if(!encryptedToken) {
+        return { hasToken: false };
+      } 
+      return { hasToken: true };
+    }),
 });
