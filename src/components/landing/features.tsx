@@ -18,6 +18,7 @@ const SwapColumnFeatures = () => {
     title: "",
     description: "",
     contentPosition: "l",
+    imgSrc: "",
     Icon: FiEye,
   });
 
@@ -122,26 +123,19 @@ const Content = ({
 
 const ExampleFeature = ({ featureInView }: { featureInView: FeatureType }) => {
   return (
-    <div className="relative h-96 w-full rounded-xl bg-slate-800 shadow-xl">
+    <div className="relative h-full w-[700px] rounded-xl bg-slate-800 shadow-xl">
       <div className="flex w-full gap-1.5 rounded-t-xl bg-slate-900 p-3">
         <div className="h-3 w-3 rounded-full bg-red-500" />
         <div className="h-3 w-3 rounded-full bg-yellow-500" />
         <div className="h-3 w-3 rounded-full bg-green-500" />
       </div>
-      <div className="p-2">
-        <p className="font-mono text-sm text-slate-200">
-          <span className="text-green-300">~</span> Show a part of your product
-          that explains what{" "}
-          <span className="inline-block rounded bg-indigo-600 px-1 font-semibold">
-            {"\""}{featureInView.title}{"\""}
-          </span>{" "}
-          means.
-        </p>
+      <div className="p-2 w-full h-full"> 
+        <img 
+          src={featureInView.imgSrc} 
+          alt={featureInView.title} 
+          className="w-full h-auto object-cover rounded-xl mt-2"
+        />
       </div>
-
-      <span className="absolute left-[50%] top-[50%] -translate-x-[50%] -translate-y-[50%] text-9xl text-slate-700">
-        <featureInView.Icon />
-      </span>
     </div>
   );
 };
@@ -154,6 +148,7 @@ type FeatureType = {
   description: string;
   contentPosition: "l" | "r";
   Icon: IconType;
+  imgSrc: string;
 };
 
 const features: FeatureType[] = [
@@ -162,6 +157,7 @@ const features: FeatureType[] = [
     callout: "Automate your workflow",
     title: "Pull Requests Auto-Reviewed",
     description: "Get instant PR code reviews on Github to help develoeprs ship fast!",
+    imgSrc: "/feedback-feature.webp", 
     contentPosition: "r",
     Icon: FiEye,
   },
@@ -170,6 +166,7 @@ const features: FeatureType[] = [
     callout: "Zone in on feedback",
     title: "Chat with Inspector General",
     description: "Ask inspector general for more details feedback on your code, or narrow in to file specific feedback.",
+    imgSrc: "/chat-feature.webp", 
     contentPosition: "l",
     Icon: FiSearch,
   },
@@ -178,6 +175,7 @@ const features: FeatureType[] = [
     callout: "Help Developers",
     title: "Line by line PR feedback",
     description: "We don't just tell a long list of issues, we provide feedback line by line to help developers find the issues and fix them quickly.",
+    imgSrc: "/chat-feature.webp", 
     contentPosition: "r",
     Icon: FiPlay,
   },
