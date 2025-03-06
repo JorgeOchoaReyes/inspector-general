@@ -26,7 +26,7 @@ export default function CodeDisplayBlock({ code, lang, _theme }: ButtonCodeblock
   };
 
   return (
-    <div className="relative flex flex-col text-start  ">
+    <div className="relative flex flex-col text-start">
       <Button
         onClick={copyToClipboard}
         variant="ghost"

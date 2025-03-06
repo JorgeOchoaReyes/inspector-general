@@ -1,7 +1,5 @@
 import Link from "next/link";
-import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react"; 
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
+import { GithubIcon, Instagram, Linkedin, Mail, MapPin, } from "lucide-react";  
 import { Separator } from "~/components/ui/separator";
 
 export default function Footer() {
@@ -29,63 +27,44 @@ export default function Footer() {
           <div className="space-y-4">
             <h2 className="text-xl font-bold">Quick Links</h2>
             <ul className="space-y-2">
-              {["Home", "About", "Services", "Portfolio", "Blog", "Contact"].map((item) => (
-                <li key={item}>
-                  <Link href="#" className="text-slate-400 hover:text-white transition-colors">
+              {[ "Home", "Dashboard", "Login", "Contact" ].map((item) => {
+                let link = "#";
+                switch(item) {
+                  case "Contact":
+                    link = "mailto:jorgeochoareyes@gmailcom";
+                    break;
+                  case "Login":
+                    link = "/login";
+                    break;
+                  case "Dashboard":
+                    link = "/dashboard";
+                    break;
+                  case "Home":
+                    link = "/";
+                    break;
+                }
+                return <li key={item}>
+                  <Link href={link} className="text-slate-400 hover:text-white transition-colors">
                     {item}
                   </Link>
-                </li>
-              ))}
+                </li>;
+              })}
             </ul>
-          </div>
-
-          {/* Services */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold">Our Services</h2>
-            <ul className="space-y-2">
-              {[
-                "Web Development",
-                "Mobile Apps",
-                "UI/UX Design",
-                "Digital Marketing",
-                "SEO Optimization",
-                "Cloud Solutions",
-              ].map((service) => (
-                <li key={service}>
-                  <Link href="#" className="text-slate-400 hover:text-white transition-colors">
-                    {service}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          </div> 
 
           {/* Newsletter */}
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold">Subscribe</h2>
-            <p className="text-slate-400">Subscribe to our newsletter for the latest updates.</p>
-            <div className="flex flex-col space-y-2">
-              <Input
-                type="email"
-                placeholder="Your email"
-                className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-              />
-              <Button className="w-full">Subscribe</Button>
-            </div>
-            <div className="flex space-x-4 pt-2">
-              <Link href="#" className="text-slate-400 hover:text-white transition-colors">
-                <Facebook className="h-5 w-5" />
-                <span className="sr-only">Facebook</span>
+          <div className="space-y-4"> 
+            <h2 className="text-xl font-bold">Social Media</h2>
+            <div className="flex space-x-4 pt-2"> 
+              <Link href="https://github.com/JorgeOchoaReyes/inspector-general" className="text-slate-400 hover:text-white transition-colors">
+                <GithubIcon className="h-5 w-5" />
+                <span className="sr-only">Github</span>
               </Link>
-              <Link href="#" className="text-slate-400 hover:text-white transition-colors">
-                <Twitter className="h-5 w-5" />
-                <span className="sr-only">Twitter</span>
-              </Link>
-              <Link href="#" className="text-slate-400 hover:text-white transition-colors">
+              <Link href="https://www.linkedin.com/in/jorge-ochoa-reyes-70087b223/" className="text-slate-400 hover:text-white transition-colors">
                 <Instagram className="h-5 w-5" />
                 <span className="sr-only">Instagram</span>
               </Link>
-              <Link href="#" className="text-slate-400 hover:text-white transition-colors">
+              <Link href="https://www.instagram.com/jorgeochoareyes/" className="text-slate-400 hover:text-white transition-colors">
                 <Linkedin className="h-5 w-5" />
                 <span className="sr-only">LinkedIn</span>
               </Link>
@@ -96,7 +75,7 @@ export default function Footer() {
         <Separator className="my-8 bg-slate-700" />
 
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-slate-400">
-          <p>© {new Date().getFullYear()} Company Name. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} NZQR. All rights reserved.</p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link href="#" className="hover:text-white transition-colors">
               Privacy Policy
