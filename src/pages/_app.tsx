@@ -7,6 +7,7 @@ import { ThemeProvider } from "~/components/sidebar/theme-provider";
 import { api } from "~/utils/api";
 import "~/styles/globals.css";
 import "diff2html/bundles/css/diff2html.min.css";
+import { Analytics } from "@vercel/analytics/react";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -14,18 +15,21 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
  
   return (
-    <SessionProvider session={session}> 
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >  
-        <div className={GeistSans.className}>
-          <Component {...pageProps} />
-        </div> 
-      </ThemeProvider>
-    </SessionProvider>
+    <>
+      <SessionProvider session={session}> 
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >  
+          <div className={GeistSans.className}>
+            <Component {...pageProps} />
+          </div> 
+        </ThemeProvider>
+      </SessionProvider>
+      <Analytics />
+    </>
   );
 };
 
