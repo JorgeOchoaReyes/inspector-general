@@ -1,8 +1,7 @@
-import { DashboardLayout } from "~/components/layout/DashboardLayout"; 
+import { DashboardLayout } from "~/components/layout/DashboardLayout";  
 
-import { api } from "~/utils/api";
-
-export default function Home(){   
+export default function Home(){    
+  
   return (
     <DashboardLayout title="Homes"> 
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

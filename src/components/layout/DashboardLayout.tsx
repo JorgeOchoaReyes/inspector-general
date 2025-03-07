@@ -3,23 +3,27 @@ import { AppSidebar } from "~/components/sidebar/app-sidebar";
 import { Separator } from "@radix-ui/react-separator";
 import { useRouter } from "next/router";
 import {
-  Breadcrumb,
-  BreadcrumbEllipsis,
+  Breadcrumb, 
   BreadcrumbItem,
   BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
+  BreadcrumbList, 
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
+import { GithubTokenError } from "../view/githubTokenError";
 import React from "react";
+import { api } from "~/utils/api";
 
 export const DashboardLayout: React.FC<{
     children: React.ReactNode;
     title?: string;
 }> = ({ children, title }) => {
-  const { pathname } = useRouter();
-
+  const { pathname } = useRouter(); 
   const splitPath = pathname.split("/").filter(Boolean); 
+  const hasGithubToken = api.repos.userHasGitHubToken.useQuery();  
+  
+  const pathNameCheck = pathname !== "/dashboard/github";
+  const basePath = pathname === "/dashboard";
+  const pathNameCheckBlockPaths = pathname.includes("/pull-requests") || pathname.includes("/repositories");
   
   return <SidebarProvider>
     <AppSidebar />
@@ -52,8 +56,10 @@ export const DashboardLayout: React.FC<{
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-      </header>  
-      {children}
+      </header>   
+      {
+        (!hasGithubToken.data?.hasToken && pathNameCheck && (pathNameCheckBlockPaths || basePath)) ? <GithubTokenError /> : children
+      }  
     </SidebarInset>
   </SidebarProvider>;
 };
