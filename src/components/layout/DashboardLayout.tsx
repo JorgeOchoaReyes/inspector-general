@@ -10,8 +10,9 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { GithubTokenError } from "../view/githubTokenError";
-import React from "react";
+import React, { useEffect } from "react";
 import { api } from "~/utils/api";
+import { useStorage } from "~/hooks/use-storage";
 
 export const DashboardLayout: React.FC<{
     children: React.ReactNode;
@@ -19,12 +20,20 @@ export const DashboardLayout: React.FC<{
 }> = ({ children, title }) => {
   const { pathname } = useRouter(); 
   const splitPath = pathname.split("/").filter(Boolean); 
-  const hasGithubToken = api.repos.userHasGitHubToken.useQuery();  
+  const hasGithubToken = api.repos.userHasGitHubToken.useQuery(undefined); 
+  const storage = useStorage();
+
+  useEffect(() => {
+    if (hasGithubToken.data?.hasToken !== storage.does_user_have_github_token) {  
+      storage.setDoesUserHaveGithubToken(hasGithubToken.data?.hasToken ?? false);
+    }
+  }, [hasGithubToken.data?.hasToken]);
   
   const pathNameCheck = pathname !== "/dashboard/github";
   const basePath = pathname === "/dashboard";
   const pathNameCheckBlockPaths = pathname.includes("/pull-requests") || pathname.includes("/repositories");
-  
+  const showGithubTokenError = !storage.does_user_have_github_token && pathNameCheck && (pathNameCheckBlockPaths || basePath);
+
   return <SidebarProvider>
     <AppSidebar />
     <SidebarInset>
@@ -57,8 +66,8 @@ export const DashboardLayout: React.FC<{
           </Breadcrumb>
         </div>
       </header>   
-      {
-        (!hasGithubToken.data?.hasToken && pathNameCheck && (pathNameCheckBlockPaths || basePath)) ? <GithubTokenError /> : children
+      { 
+        (showGithubTokenError) ? <GithubTokenError /> : children
       }  
     </SidebarInset>
   </SidebarProvider>;

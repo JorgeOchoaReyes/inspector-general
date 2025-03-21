@@ -67,7 +67,7 @@ const SocialOptions = () => {
         onClick={async () => { 
           try {
             await signIn("discord", {  
-              callbackUrl: "/dashboard",
+              callbackUrl: "/dashboard/repositories",
             }); 
           } catch (error) {
             console.error(error);

@@ -88,7 +88,7 @@ export default function Repos() {
                                 className="text-blue-500"
                               >
                                 {
-                                  `${cell.row.original.repoName}/${cell.getValue() as string} #${cell.row.original.number}`
+                                  `${cell.row.original.repoName}/${cell.row.original.title} #${cell.row.original.number}`
                                 }
                               </a>
                             </div>

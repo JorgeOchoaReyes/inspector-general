@@ -173,16 +173,13 @@ export const inspectorGeneralRouter = createTRPCRouter({
         sender: "ASSISTANT",
         timestamp: new Date(),
         chatId: chatHistory.id,
-      }; 
-
+      };  
       const instructionsPullRequiest: InstructionsPullRequest = {
         id: uuid(),
         githubPullRequestId: githubPullRequest.id,
         instructions: [instructions],
-      }; 
-
-      const db = ctx.db;
-
+      };  
+      const db = ctx.db; 
       await db.gitHubPullRequest.create({
         data: githubPullRequest,
       });
