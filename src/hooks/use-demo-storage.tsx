@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware"; 
 
-interface BearState {
+interface DemoState {
   prUrl: string;
   setPrUrl: (prUrl: string) => void;
   diffText: string;
@@ -16,7 +16,7 @@ const defauilt = {
   "inspectorGeneralReview": "The pull request adds error handling for fetching lyrics from the `ovh` API.  This is a good improvement. However, the error handling could be more robust and informative.\n\n1. **Generic Error Handling:** The `catch (err)` block only logs the error.  It should also include more context, such as the specific request URL that failed and potentially a more user-friendly error message to be returned to the client.\n\n   ```javascript\n   } catch (err) {\n     console.error(\"Error fetching lyrics from OVH API for URL:\", url, err); \n     lyrics = \"Failed to retrieve lyrics. Please try again later.\"; //More user-friendly message\n   }\n   ```\n\n2. **Specific Error Handling (Optional):**  Consider handling specific HTTP error codes (e.g., 404 Not Found) differently.  A 404 might indicate that the song/artist is not found in the OVH API,  allowing for a more precise message to the user.\n\n3. **Avoid Unnecessary `replaceAll` Calls:** The multiple `replaceAll` calls can be chained together for efficiency:\n\n   ```javascript\n   lyrics = (res.lyrics || \"\").replaceAll(/\\\\|\\n\\n|\"/g, \"\");\n   ```\n   This single line replaces all occurrences of `\\`, `\\n\\n`, and `\"`.  The `/g` flag ensures all occurrences are replaced.\n\n\n4. **Consider using a dedicated logging library:**  Instead of using `console.log` and `console.error`, consider using a structured logging library like `pino` or `winston`. This will allow for easier monitoring and debugging in production.\n\n\nThe improved `getSong` function incorporating these suggestions would look like this:\n\n```javascript\n  getSong: publicProcedure\n    .input(z.object({ api_path: z.string() }))\n    .mutation(async ({ input }) => {\n      // ... (rest of the code remains the same)\n\n        if(lyrics === \"\" && data?.response?.song?.primary_artist?.name && data?.response?.song?.title) { \n          try{\n            const url = `${ovhApiUrl}/v1/${data?.response?.song.primary_artist.name}/${data?.response?.song.title}`;\n            const response = await fetch(url);\n            if (!response.ok) {\n              console.error(`OVH API request failed with status ${response.status} for URL: ${url}`);\n              lyrics = `Failed to retrieve lyrics (HTTP ${response.status}). Please try again later.`;\n              return;\n            }\n            const res = await response.json() as { lyrics: string }; \n            lyrics = (res.lyrics || \"\").replaceAll(/\\\\|\\n\\n|\"/g, \"\");\n          } catch (err) {\n            console.error(\"Error fetching lyrics from OVH API for URL:\", url, err); \n            lyrics = \"Failed to retrieve lyrics. Please try again later.\"; \n          }\n        } else {\n          lyrics = \"Lyrics not found\";\n        }\n        // ... (rest of the code remains the same)\n\n    }),\n```\n"
 };
 
-export const useDemoStore = create<BearState>()(
+export const useDemoStore = create<DemoState>()(
   devtools(
     persist(
       (set) => ({

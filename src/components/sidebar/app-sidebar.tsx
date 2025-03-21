@@ -68,6 +68,17 @@ const data = {
       ],
     },
     {
+      title: "Chat",
+      url: "/dashboard/chat",
+      icon: GitPullRequest,
+      items: [
+        {
+          title: "Red Horse Team Chat",
+          url: "/dashboard/pull-requests?filter=recent",
+        }, 
+      ],
+    },
+    {
       title: "GitHub",
       url: "/dashboard/github",
       icon: GithubIcon, 
