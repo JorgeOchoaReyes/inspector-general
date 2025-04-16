@@ -3,11 +3,9 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   protectedProcedure, 
-} from "~/server/api/trpc";
-import { v4 as uuid } from "uuid";
+} from "~/server/api/trpc"; 
 import { Octokit } from "@octokit/core";  
-import type { Endpoints } from "@octokit/types";
-import { list } from "postcss";
+import type { Endpoints } from "@octokit/types"; 
  
 type listUserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"];
 type UserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]; 

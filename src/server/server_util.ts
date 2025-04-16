@@ -1,9 +1,6 @@
 import crypto from "crypto"; 
-import { type Context } from "./api/trpc";
-import { type Endpoints } from "@octokit/types";
-import { Octokit } from "@octokit/core";  
-
-type getTreeResponse = Endpoints["GET /repos/{owner}/{repo}/git/trees/{tree_sha}"]["response"];
+import { type Context } from "./api/trpc"; 
+import { GoogleGenerativeAI } from "@google/generative-ai"; 
 
 export const encrypt = (text: string, key: string) => {
   const iv = crypto.randomBytes(16); 
@@ -43,4 +40,14 @@ export const getUserInfo = async (ctx: Context) => {
     token,
     account: userAccount
   };
+};
+
+export const inspector_general = (instructions: string,) => { 
+  const ig = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? "");
+  const ig_model = ig.getGenerativeModel({
+    model: "gemini-1.5-flash",
+    systemInstruction: instructions, 
+  });   
+
+  return ig_model;
 };

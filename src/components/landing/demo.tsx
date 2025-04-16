@@ -16,8 +16,8 @@ export const Demo: React.FC<{
 }> = ({
   bgStyle, 
 }) => { 
-  const getPrDiff = api.dmeoInspectorGeneral.getPullRequest.useMutation(); 
-  const getReview = api.dmeoInspectorGeneral.analyzePullRequest.useMutation();
+  const getPrDiff = api.demoInspectorGeneralRouter.getPullRequest.useMutation(); 
+  const getReview = api.demoInspectorGeneralRouter.analyzePullRequest.useMutation();
   
   const demoStore = useDemoStore();
 
@@ -43,8 +43,12 @@ export const Demo: React.FC<{
             if(prinfo.success) {
               demoStore.setDiffText(prinfo.success.diff_text);
             }
-            if(reviewResults.success) {
-              demoStore.setInspectorGeneralReview(reviewResults.success);
+            if(reviewResults) {
+              let aggregate = "";
+              for await (const result of reviewResults) {
+                aggregate = aggregate + result;
+                demoStore.setInspectorGeneralReview(aggregate);
+              }
             }
           }}
           _loading={getPrDiff.isPending || getReview.isPending}
