@@ -9,6 +9,7 @@ import {
   Volume2,
 } from "lucide-react";
 import { ChatMessageList } from "~/components/ui/chat/chat-message-list";
+import { Typewriter } from "./typewrite"; 
 
 const ChatAiIcons = [
   {
@@ -57,14 +58,33 @@ export const DemoChat: React.FC<{
                 .map((part: string, index: number) => {
                   if (index % 2 === 0) {
                     return (
-                      <Markdown key={index} remarkPlugins={[remarkGfm]}>
-                        {part}
-                      </Markdown>
+                      <Typewriter 
+                        key={index}
+                        text={part}
+                        speed={1}
+                        delay={0}
+                        className="text-white"
+                        customRenderText={(text: string) =>
+                          <Markdown key={index} remarkPlugins={[remarkGfm]}>
+                            {text}
+                          </Markdown>
+                        } 
+                      />
                     );
-                  } else {
+                  } 
+                  else {
                     return (
                       <pre className="whitespace-pre-wrap pt-2" key={index}>
-                        <CodeDisplayBlock code={part} lang="js" _theme="dark" />
+                        <Typewriter 
+                          key={index}
+                          text={part}
+                          speed={1}
+                          delay={20}
+                          className="text-white"
+                          customRenderText={(text: string) =>
+                            <CodeDisplayBlock code={text} lang="js" _theme="dark" />
+                          } 
+                        /> 
                       </pre>
                     );
                   }

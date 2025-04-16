@@ -11,7 +11,7 @@ export const Pricing = () => {
   };    
   return (
     <section 
-      className="relative overflow-hidden  bg-[#0f172a] text-zinc-200 selection:bg-zinc-600 min-h-screen"
+      className="relative overflow-hidden  bg-[#0f172a] text-zinc-200 selection:bg-zinc-600 min-h"
     >
       <div className="relative z-10 mx-auto max-w-5xl px-4 py-28 md:px-8">
         <div className="mb-12 space-y-3">
@@ -19,8 +19,7 @@ export const Pricing = () => {
             Pricing
           </h2>
           <p className="text-center text-base text-zinc-400 md:text-lg">
-            Use it for free for yourself, upgrade when your team needs advanced
-            control.
+            Use it for free for yourself, upgrade when your team needs more repos.
           </p>
         </div>
 
@@ -31,10 +30,8 @@ export const Pricing = () => {
             bestFor="Best for 1-5 users"
             CTA={<GhostButton onClick={onClickLeadToDashboard} className="w-full">Get started free</GhostButton>}
             benefits={[
-              { text: "One repository", checked: true },
-              { text: "Email support", checked: true },
-              { text: "30 day data retention", checked: true }, 
-              { text: "Priority support", checked: true }, 
+              { text: "One repository", checked: true }, 
+              { text: "30 day data retention", checked: true },  
             ]}
           />
           <PriceCard
@@ -46,11 +43,9 @@ export const Pricing = () => {
                 14-day free trial
               </GhostButton>
             }
-            benefits={[
-              { text: "One repository", checked: true },
+            benefits={[ 
               { text: "Multiple repository", checked: true },
-              { text: "Email support", checked: true },
-              { text: "30 day data retention", checked: true }, 
+              { text: "Email support", checked: true }, 
               { text: "365 day data retention", checked: true }, 
               { text: "Priority support", checked: true }, 
             ]}
@@ -59,10 +54,8 @@ export const Pricing = () => {
             tier="Enterprise"
             price="Contact us"
             bestFor="Best for 50+ users"
-            CTA={<GhostButton onClick={() => {
-              if(window) {
-                window.open("mailto:xyz@jorgeochoareyes@gmail.com");
-              }
+            CTA={<GhostButton  onClick={async () => {
+              await router.push("sign-in");
             }} className="w-full">Contact us</GhostButton>}
             benefits={[
               { text: "Multiple repository", checked: true },
@@ -92,9 +85,8 @@ const PriceCard = ({ tier, price, bestFor, CTA, benefits }: PriceCardProps) => {
         {benefits.map((b, i) => (
           <Benefit {...b} key={i} />
         ))}
-      </div>
-
-      {CTA}
+      </div> 
+      {CTA} 
     </Card>
   );
 };

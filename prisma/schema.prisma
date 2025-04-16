@@ -39,10 +39,10 @@ model GitHubAccount {
     github_token            String
     accountId               String
     account                 Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
-    repos                   GitHubRepo[] 
+    repos                   Repo[] 
 }
 
-model GitHubRepo {
+model Repo {
     id                      String @id @default(cuid()) 
     githubId                String
     name                    String
@@ -66,13 +66,11 @@ model GitHubRepo {
     account                 GitHubAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)  
     starred                 Boolean  @default(false)
 
-    pullRequests            GitHubPullRequest[]  
- 
-
+    pullRequests            PullRequest[]   
 } 
  
 
-model GitHubPullRequest {
+model PullRequest {
     id                          String @id @default(cuid())
     githubId                    String
     number                      Int
@@ -89,8 +87,8 @@ model GitHubPullRequest {
     comments_url                String
     statuses_url                String
         
-    githunRepoId                String
-    githubRepo                  GitHubRepo @relation(fields: [githunRepoId], references: [id], onDelete: Cascade)
+    repoId                      String
+    repo                        Repo @relation(fields: [repoId], references: [id], onDelete: Cascade)
         
     ig_chat_id                  String   
     ig_chat_history             IGChatHistory? 
@@ -100,8 +98,8 @@ model GitHubPullRequest {
 model InstructionsPullRequest {
     id                      String @id @default(cuid()) 
     instructions            String[]
-    githubPullRequestId     String @unique
-    githubPullRequest       GitHubPullRequest @relation(fields: [githubPullRequestId], references: [id])
+    pullRequestId     String @unique
+    pullRequest       PullRequest @relation(fields: [pullRequestId], references: [id])
 }
 
 model IGChatHistory {
@@ -109,8 +107,8 @@ model IGChatHistory {
     chatName               String  
     chatMessages           IGChatMessage[] 
     pullRequestUpdated     DateTime // Use this to track when the pull request was last updated and re initiate the chat if it is too old  
-    githubPullRequestId    String @unique
-    githubPullRequest      GitHubPullRequest @relation(fields: [githubPullRequestId], references: [id])
+    pullRequestId    String @unique
+    pullRequest      PullRequest @relation(fields: [pullRequestId], references: [id])
 }
 
 model IGChatMessage {

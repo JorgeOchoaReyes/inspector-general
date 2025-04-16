@@ -4,16 +4,11 @@ import { pullRequestRouter } from "./routers/pull-request";
 import { inspectorGeneralRouter } from "./routers/inspector-general";
 import { demoInspectorGeneralRouter } from "./routers/demo-inspector-general";
 
-/**
- * This is the primary router for your server.
- *
- * All routers added in /api/routers should be manually added here.
- */
 export const appRouter = createTRPCRouter({
   repos: reposRouter,
   pullRequest: pullRequestRouter,
   inspectorGeneralRouter: inspectorGeneralRouter,
-  dmeoInspectorGeneral: demoInspectorGeneralRouter,
+  demoInspectorGeneralRouter: demoInspectorGeneralRouter,
 });
 
 // export type definition of API

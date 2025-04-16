@@ -3,11 +3,9 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   protectedProcedure, 
-} from "~/server/api/trpc";
-import { v4 as uuid } from "uuid";
+} from "~/server/api/trpc"; 
 import { Octokit } from "@octokit/core";  
-import type { Endpoints } from "@octokit/types";
-import { list } from "postcss";
+import type { Endpoints } from "@octokit/types"; 
  
 type listUserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls"]["response"];
 type UserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]; 
@@ -76,7 +74,7 @@ export const pullRequestRouter = createTRPCRouter({
           return { success: [] };
         }
 
-        const getRepos = await db.gitHubRepo.findMany({
+        const getRepos = await db.repo.findMany({
           where: {
             accountId: getGithubAccount.id
           },
@@ -87,10 +85,10 @@ export const pullRequestRouter = createTRPCRouter({
         }
 
         const findPullRequest = await Promise.all(getRepos.map(async (repo) => {
-          const githubRepoId = repo.id;
-          const pullRequsts = await db.gitHubPullRequest.findMany({
+          const repoId = repo.id;
+          const pullRequsts = await db.pullRequest.findMany({
             where: {
-              githunRepoId: githubRepoId
+              repoId: repoId
             }
           });
           const addTitleOfRepo = pullRequsts.map((pr) => {

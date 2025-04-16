@@ -10,7 +10,7 @@ import { v4 as uuid } from "uuid";
 import { getUserInfo } from "../../server_util"; 
 import type { Endpoints } from "@octokit/types";
 import type { 
-  GitHubPullRequest,
+  PullRequest,
   IGChatHistory,
   IGChatMessage,
   InstructionsPullRequest, 
@@ -42,7 +42,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
         }
       }) as getRepoResponse; 
       const repoId = repoDetails.data.id.toString(); 
-      const currentRepo = await ctx.db.gitHubRepo.findFirst({
+      const currentRepo = await ctx.db.repo.findFirst({
         where: { githubId: repoId },
       }); 
 
@@ -131,7 +131,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
       const initialQuestion = startChat.sendMessage("Provide a code review for the pull request.");
       const resultOfReview = (await initialQuestion).response.text(); 
       
-      const githubPullRequest: GitHubPullRequest = {
+      const pull_Request: PullRequest = {
         id: uuid(),
         githubId: pullRequest.id.toString(),
         number: pullRequest.number,
@@ -147,7 +147,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
         review_comment_url: pullRequest.review_comment_url,
         comments_url: pullRequest.comments_url,
         statuses_url: pullRequest.statuses_url, 
-        githunRepoId: currentRepo?.id ?? "", 
+        repoId: currentRepo?.id ?? "", 
         ig_chat_id: "",
       }; 
 
@@ -155,10 +155,10 @@ export const inspectorGeneralRouter = createTRPCRouter({
         id: uuid(),
         chatName: `Code Review for ${pullRequest.title}`,  
         pullRequestUpdated: new Date(pullRequest.updated_at),
-        githubPullRequestId: githubPullRequest.id,
+        pullRequestId: pull_Request.id,
       }; 
 
-      githubPullRequest.ig_chat_id = chatHistory.id;
+      pull_Request.ig_chat_id = chatHistory.id;
       
       const firstMessage: IGChatMessage = { 
         id: uuid(),
@@ -176,12 +176,12 @@ export const inspectorGeneralRouter = createTRPCRouter({
       };  
       const instructionsPullRequiest: InstructionsPullRequest = {
         id: uuid(),
-        githubPullRequestId: githubPullRequest.id,
+        pullRequestId: pull_Request.id,
         instructions: [instructions],
       };  
       const db = ctx.db; 
-      await db.gitHubPullRequest.create({
-        data: githubPullRequest,
+      await db.pullRequest.create({
+        data: pull_Request,
       });
       await db.iGChatHistory.create({
         data: chatHistory,
@@ -224,12 +224,12 @@ export const inspectorGeneralRouter = createTRPCRouter({
       
       const id = getPullRequest.data.id.toString();
 
-      const chatHistory = await ctx.db.gitHubPullRequest.findFirst({
+      const chatHistory = await ctx.db.pullRequest.findFirst({
         where: { githubId: id },
         include: { ig_chat_history: true },
       }); 
 
-      if(!chatHistory || !chatHistory.ig_chat_history) { 
+      if(!chatHistory?.ig_chat_history) { 
         return { success: false };
       }
       const igChatHistoryId = chatHistory.ig_chat_history.id;
@@ -271,7 +271,7 @@ export const inspectorGeneralRouter = createTRPCRouter({
 
       const id = getPullRequest.data.id.toString();
 
-      const chatHistory = await ctx.db.gitHubPullRequest.findFirst({
+      const chatHistory = await ctx.db.pullRequest.findFirst({
         where: { githubId: id },
         include: { ig_chat_history: true, instructions_pull_request: true },
       });

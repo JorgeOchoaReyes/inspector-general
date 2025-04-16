@@ -4,8 +4,8 @@ import {
   publicProcedure, 
 } from "~/server/api/trpc"; 
 import { Octokit } from "@octokit/core";  
-import type { Endpoints } from "@octokit/types"; 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { Endpoints } from "@octokit/types";  
+import { inspector_general } from "~/server/server_util";
   
 type getPullRequestResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"];
 type UserReposResponse = Endpoints["GET /repos/{owner}/{repo}/pulls/{pull_number}"]["response"]; 
@@ -16,14 +16,16 @@ export const demoInspectorGeneralRouter = createTRPCRouter({
     .input(z.object({ 
       publicPullRequestURL: z.string().min(1)
     }))
-    .mutation(async ({ input }) => {
+    .mutation(async function* ({ input }) {
       const { publicPullRequestURL } = input; 
 
-      if(!publicPullRequestURL || publicPullRequestURL === "") {
+      if(!publicPullRequestURL || publicPullRequestURL === "" || !process.env.GH_TOKEN_DEMO) {
         return { success: null };
       } 
       try {  
-        const github = new Octokit(); 
+        const github = new Octokit({
+          auth: process.env.GH_TOKEN_DEMO ?? ""
+        }); 
         // https://github.com/{owner}/{repo}/pull/{pullRequestNumber}
 
         const urlParts = publicPullRequestURL.split("/");
@@ -84,8 +86,8 @@ export const demoInspectorGeneralRouter = createTRPCRouter({
         })); 
 
         const instructions =  `
-            You a senior software engineer. You are asked to provide a code review with 
-            helpful suggestions for the following pull request.
+            You a senior software engineer. You are asked to provide a code review focusing ONLY on potential issues
+            and anything that can cause bug errors.
             Make sure you only focus on the code referenced in the diff.
             Be concise and focus on the most impactful suggestions only.
             Provide code examples where necessary.
@@ -102,22 +104,19 @@ export const demoInspectorGeneralRouter = createTRPCRouter({
             ### START File Contents after the changes ### 
             ${fileContents.map((file) => {return `####  File: ${file.filename} \n ${file.content}`;}).join("\n")}
             ### END File Contents after the changes ###
-        `; 
-      
-        const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? ""); 
-        const model = genAI.getGenerativeModel({
-          model: "gemini-1.5-flash",
-          systemInstruction: instructions,
-        });
-
-        const startChat = model.startChat();  
-        const initialQuestion = startChat.sendMessage("Provide a code review for the pull request.");
-        const resultOfReview = (await initialQuestion).response.text(); 
-
-        return { success: resultOfReview };
+        `;  
+        const igChat = inspector_general(instructions);   
+        const stream = (await igChat.generateContentStream("What do you think of the changes?")).stream; 
+        for await  (const chunk of stream) {
+          const text = chunk.text(); 
+          if(text) {
+            yield text; 
+          } 
+        } 
+        
       } catch (error) {
         console.error(error);
-        return { success: null };
+        return null;
       }
     }), 
   getPullRequest: publicProcedure
@@ -130,7 +129,9 @@ export const demoInspectorGeneralRouter = createTRPCRouter({
         return { success: null };
       }
       try { 
-        const github = new Octokit(); 
+        const github = new Octokit({
+          auth: process.env.GH_TOKEN_DEMO ?? ""
+        }); 
         const urlParts = publicPullRequestURL.split("/");
         const owner = urlParts[3];
         const repo = urlParts[4];
