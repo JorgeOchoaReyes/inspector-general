@@ -9,8 +9,7 @@ import {
   Volume2,
 } from "lucide-react";
 import { ChatMessageList } from "~/components/ui/chat/chat-message-list";
-import { Typewriter } from "./typewrite";
-import { text } from "stream/consumers";
+import { Typewriter } from "./typewrite"; 
 
 const ChatAiIcons = [
   {
@@ -72,10 +71,20 @@ export const DemoChat: React.FC<{
                         } 
                       />
                     );
-                  } else {
+                  } 
+                  else {
                     return (
                       <pre className="whitespace-pre-wrap pt-2" key={index}>
-                        <CodeDisplayBlock code={part} lang="js" _theme="dark" />
+                        <Typewriter 
+                          key={index}
+                          text={part}
+                          speed={1}
+                          delay={20}
+                          className="text-white"
+                          customRenderText={(text: string) =>
+                            <CodeDisplayBlock code={text} lang="js" _theme="dark" />
+                          } 
+                        /> 
                       </pre>
                     );
                   }

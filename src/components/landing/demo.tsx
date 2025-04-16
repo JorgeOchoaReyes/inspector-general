@@ -18,7 +18,7 @@ export const Demo: React.FC<{
 }) => { 
   const getPrDiff = api.demoInspectorGeneralRouter.getPullRequest.useMutation(); 
   const getReview = api.demoInspectorGeneralRouter.analyzePullRequest.useMutation();
-  
+  const [response, setResponse] = React.useState<string>("");
   const demoStore = useDemoStore();
 
   return (
@@ -45,8 +45,11 @@ export const Demo: React.FC<{
             }
             if(reviewResults) {
               let aggregate = "";
+              demoStore.setInspectorGeneralReview("");
               for await (const result of reviewResults) {
                 aggregate = aggregate + result;
+                console.log(result);
+                setResponse((p) => p + result);
                 demoStore.setInspectorGeneralReview(aggregate);
               }
             }
@@ -81,7 +84,7 @@ export const Demo: React.FC<{
                 [
                   {
                     role: "inspector-general",
-                    content: demoStore.inspectorGeneralReview
+                    content: response !== "" ? response : demoStore.inspectorGeneralReview
                   }
                 ]}
             widthClassNames="w-[30vw] min-w-[30vw] max-w-[30vw]"

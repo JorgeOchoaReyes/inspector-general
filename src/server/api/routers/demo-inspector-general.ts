@@ -19,11 +19,13 @@ export const demoInspectorGeneralRouter = createTRPCRouter({
     .mutation(async function* ({ input }) {
       const { publicPullRequestURL } = input; 
 
-      if(!publicPullRequestURL || publicPullRequestURL === "") {
+      if(!publicPullRequestURL || publicPullRequestURL === "" || !process.env.GH_TOKEN_DEMO) {
         return { success: null };
       } 
       try {  
-        const github = new Octokit(); 
+        const github = new Octokit({
+          auth: process.env.GH_TOKEN_DEMO ?? ""
+        }); 
         // https://github.com/{owner}/{repo}/pull/{pullRequestNumber}
 
         const urlParts = publicPullRequestURL.split("/");
@@ -85,7 +87,7 @@ export const demoInspectorGeneralRouter = createTRPCRouter({
 
         const instructions =  `
             You a senior software engineer. You are asked to provide a code review focusing ONLY on potential issues
-            and anything that can cause bug errors, lastly suggest fixes.
+            and anything that can cause bug errors.
             Make sure you only focus on the code referenced in the diff.
             Be concise and focus on the most impactful suggestions only.
             Provide code examples where necessary.
@@ -127,7 +129,9 @@ export const demoInspectorGeneralRouter = createTRPCRouter({
         return { success: null };
       }
       try { 
-        const github = new Octokit(); 
+        const github = new Octokit({
+          auth: process.env.GH_TOKEN_DEMO ?? ""
+        }); 
         const urlParts = publicPullRequestURL.split("/");
         const owner = urlParts[3];
         const repo = urlParts[4];

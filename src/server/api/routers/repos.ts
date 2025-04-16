@@ -176,7 +176,7 @@ export const reposRouter = createTRPCRouter({
         },  
       ); 
         
-      const currentRepos = await ctx.db.gitHubRepo.findMany({
+      const currentRepos = await ctx.db.repo.findMany({
         where: { accountId: account.github_accounts?.[0]?.id },
       });
 
@@ -231,7 +231,7 @@ export const reposRouter = createTRPCRouter({
       }
 
       const id = uuid();
-      await ctx.db.gitHubRepo.upsert({
+      await ctx.db.repo.upsert({
         where: { id: id },
         create: { 
           githubId,
@@ -297,7 +297,7 @@ export const reposRouter = createTRPCRouter({
         return [];
       } 
 
-      const currentRepos = await ctx.db.gitHubRepo.findMany({
+      const currentRepos = await ctx.db.repo.findMany({
         where: { accountId: account.github_accounts?.[0]?.id },
       });
  
@@ -328,7 +328,7 @@ export const reposRouter = createTRPCRouter({
         return null;
       } 
 
-      const currentRepo = await ctx.db.gitHubRepo.findFirst({
+      const currentRepo = await ctx.db.repo.findFirst({
         where: { id: input.id },
       });
 
