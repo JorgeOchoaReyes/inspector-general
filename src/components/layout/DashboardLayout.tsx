@@ -10,7 +10,7 @@ import {
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
 import { GithubTokenError } from "../view/githubTokenError";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { api } from "~/utils/api";
 import { useStorage } from "~/hooks/use-storage";
 
@@ -22,12 +22,19 @@ export const DashboardLayout: React.FC<{
   const splitPath = pathname.split("/").filter(Boolean); 
   const hasGithubToken = api.repos.userHasGitHubToken.useQuery(undefined); 
   const storage = useStorage();
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     if (hasGithubToken.data?.hasToken !== storage.does_user_have_github_token) {  
       storage.setDoesUserHaveGithubToken(hasGithubToken.data?.hasToken ?? false);
     }
   }, [hasGithubToken.data?.hasToken]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setHydrated(true);
+    }
+  }, []);
   
   const pathNameCheck = pathname !== "/dashboard/github";
   const basePath = pathname === "/dashboard";
@@ -67,7 +74,7 @@ export const DashboardLayout: React.FC<{
         </div>
       </header>   
       { 
-        (showGithubTokenError) ? <GithubTokenError /> : children
+        (showGithubTokenError && hydrated) ? <GithubTokenError /> : children
       }  
     </SidebarInset>
   </SidebarProvider>;

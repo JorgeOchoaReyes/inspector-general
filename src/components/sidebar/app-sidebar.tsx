@@ -19,19 +19,18 @@ import {
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "~/components/ui/sidebar";
-import { ModeToggle } from "./theme-changer";
+} from "~/components/ui/sidebar"; 
 import { useRouter } from "next/router"; 
 import { useSession } from "next-auth/react";
 
 const data = { 
   navMain: [
-    {
-      title: "Home",
-      url: "/dashboard",
-      icon: HomeIcon,
-      isActive: false, 
-    },
+    // {
+    //   title: "Home",
+    //   url: "/dashboard",
+    //   icon: HomeIcon,
+    //   isActive: false, 
+    // },
     {
       title: "Repositories",
       url: "/dashboard/repositories",
@@ -67,17 +66,17 @@ const data = {
         },
       ],
     },
-    {
-      title: "Chat",
-      url: "/dashboard/chat",
-      icon: GitPullRequest,
-      items: [
-        {
-          title: "Red Horse Team Chat",
-          url: "/dashboard/pull-requests?filter=recent",
-        }, 
-      ],
-    },
+    // {
+    //   title: "Chat",
+    //   url: "/dashboard/chat",
+    //   icon: GitPullRequest,
+    //   items: [
+    //     {
+    //       title: "Red Horse Team Chat",
+    //       url: "/dashboard/pull-requests?filter=recent",
+    //     }, 
+    //   ],
+    // },
     {
       title: "GitHub",
       url: "/dashboard/github",
